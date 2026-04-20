@@ -8,7 +8,7 @@ const Portfolio = () => {
       <Navbar />
       {/* --- HERO / INTRO SECTION --- */}
       <section className="mb-16 bg-brand p-8 min-h-[100vh] flex justify-center items-center gap-10">
-        <img src="/src/assets/profile.jpg" alt="profile-picture" className='border-5 h-100'/>
+        <img src="/profile.jpg" alt="profile-picture" className='border-5 h-100'/>
         <div className="flex flex-col justify-center items-start gap-2">
           <h1 className="font-display text-5xl md:text-8xl font-black uppercase leading-none mb-4">
           TENGKU HAIKAL

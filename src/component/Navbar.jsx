@@ -16,7 +16,7 @@ const Navbar = () => {
                 {/* LOGO */}
                 <div className="font-display text-2xl font-black uppercase tracking-tighter">
                     <a href="/" className="hover:text-accent transition-colors">
-                        <img src="/src/assets/haikal-logo.svg" alt="TMHTA" className='h-15 w-auto object-contain'/>
+                        <img src="/haikal-logo.svg" alt="TMHTA" className='h-15 w-auto object-contain'/>
                     </a>
                 </div>
 
