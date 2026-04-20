@@ -113,11 +113,15 @@ const Portfolio = () => {
       </div>
 
       {/* --- FOOTER --- */}
-      <footer className="mt-20 border-t-4 border-black pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p className="font-display font-black uppercase">© 2026 // HAIKAL_DEV</p>
+      <footer className="mt-20 border-t-4 border-black p-8 flex flex-col md:flex-row justify-between items-center gap-4 bg-brand text-black">
+        
+        <div className='flex flex-col'>
+        <p className="font-display font-black uppercase">© 2026 // Tengku Haikal </p>
+        <img src="/haikal-logo.svg" alt="TMHTA" className='h-15 w-auto object-contain'/>
+        </div>
         <div className="flex gap-4">
           <a href="#" className="bg-black text-white px-4 py-1 font-display font-bold hover:bg-accent transition-colors">GITHUB</a>
-          <a href="#" className="bg-black text-white px-4 py-1 font-display font-bold hover:bg-brand hover:text-black transition-colors">LINKEDIN</a>
+          <a href="#" className="bg-black text-white px-4 py-1 font-display font-bold hover:bg-accent hover:text-black transition-colors">LINKEDIN</a>
         </div>
       </footer>
     </div>
