@@ -7,21 +7,31 @@ const Portfolio = () => {
 
       <Navbar />
       {/* --- HERO / INTRO SECTION --- */}
-      <section className="mb-16 bg-brand p-8 min-h-[100vh] flex justify-center items-center gap-10">
-        <img src="/profile.jpg" alt="profile-picture" className='border-5 h-100'/>
-        <div className="flex flex-col justify-center items-start gap-2">
+      <section className="mb-16 bg-brand p-8 min-h-[100vh] flex flex-col md:flex-row justify-center items-center gap-10">
+
+        <img
+          src="/profile.jpg"
+          alt="profile-picture"
+          className="h-40 md:h-80 w-auto object-cover border-4"
+        />
+
+        <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left gap-2">
+
           <h1 className="font-display text-5xl md:text-8xl font-black uppercase leading-none mb-4">
-          TENGKU HAIKAL
-        </h1>
+            TENGKU HAIKAL
+          </h1>
+
           <p className="font-display text-xl md:text-2xl font-bold bg-black text-white inline-block px-2 mb-6">
             UNIVERSITI MALAYA STUDENT | SOFTWARE DEVELOPER
           </p>
+
           <p className="font-display text-lg max-w-2xl font-bold leading-tight">
             BUILDING HIGH-PERFORMANCE WEB APPS AND TOOLS WITH A FOCUS ON
             CLEAN ARCHITECTURE AND BOLD DESIGN. CURRENTLY SPECIALIZING IN
             REACT, FLASK, AND DATA SYSTEMS.
           </p>
-          </div>
+
+        </div>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 m-16">
