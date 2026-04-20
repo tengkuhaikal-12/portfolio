@@ -12,7 +12,7 @@ const Portfolio = () => {
         <img
           src="/profile.jpg"
           alt="profile-picture"
-          className="h-40 md:h-80 w-auto object-cover border-4"
+          className="w-40 h-40 md:w-64 md:h-64 object-cover rounded-full border-4 border-black shadow-flat"
         />
 
         <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left gap-2">
