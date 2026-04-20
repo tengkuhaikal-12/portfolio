@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  /* 1. BRIGHT, HIGH-CONTRAST COLORS */
+  --color-brand: #FFFF00;
+  /* Neon Yellow */
+  --color-accent: #FF00FF;
+  /* Magenta */
+  --color-success: #00FF00;
+  /* Pure Green */
+  --color-bg: #FFFFFF;
+  --color-text: #000000;
+  --color-border-hard: #000000;
+
+  /* 2. PIXELATED & SHARP TEXT */
+  --font-display: "Courier New", Courier, monospace;
+  --font-body: "Helvetica", sans-serif;
+
+  /* 3. NO ROUNDED CORNERS (FIXED) */
+  /* We define the base radius and specific steps manually to override defaults */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-full: 0px;
+
+  /* 4. FLAT SURFACE (HARD SHADOW) */
+  --shadow-flat: 4px 4px 0px #000000;
+  --shadow-flat-lg: 8px 8px 0px #000000;
+}
+
+/* 5. GLOBAL PIXELATION & SHARP EDGES */
+@layer base {
+  html {
+    image-rendering: pixelated;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+    /* Forces layout engine to use crisp edges for lines/borders */
+    shape-rendering: crispEdges;
+  }
+
+  /* Global reset to ensure no hidden border-radii leak in from browser defaults */
+  *,
+  ::before,
+  ::after {
+    border-radius: 0px !important;
+  }
+
+  body {
+    @apply bg-bg text-text;
+  }
+}
