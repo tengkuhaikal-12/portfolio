@@ -1,7 +1,15 @@
 import React from 'react';
 import Navbar from '../component/Navbar';
+import Footer from '../component/Footer';
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../firebase/firebase";
+import { useAuth } from "../auth/useAuth";
+import { Link } from 'react-router-dom';
+
+
 
 const Portfolio = () => {
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-body">
 
@@ -86,6 +94,32 @@ const Portfolio = () => {
           </div>
         </section>
 
+        <section id='education' className='scroll-mt-28'>
+          <h2 className="text-2xl font-semibold mb-6">Education</h2>
+          <div className="flex flex-col gap-6">
+          <EducationCard
+            year="2023 - Present"
+            degree="Bachelor of Computer Science (Software Engineering)"
+            institution="Universiti Malaya"
+            desc="Specializing in Software Engineering with a focus on web development and data analysis."
+          />
+
+          <EducationCard
+            year="2022 - 2023"
+            degree="Foundation in Physical Science"
+            institution="Pusat Asasi Sains Universiti Malaya (PASUM)"
+            desc="Completed a rigorous foundation program covering mathematics, physics, and computer science."
+          />
+
+          <EducationCard
+            year="2017 - 2021"
+            degree="Sekolah Menengah Sains Gua Musang"
+            institution="Gua Musang, Kelantan"
+            desc="Focused on science, technology, engineering, and mathematics subjects with extracurriculars in coding and robotics."
+          />
+          </div>
+        </section>
+
         {/* CONTACT */}
         <section id="contact" className="scroll-mt-28 text-center">
           <h2 className="text-2xl font-semibold mb-4">Contact</h2>
@@ -106,9 +140,7 @@ const Portfolio = () => {
       </div>
 
       {/* FOOTER */}
-      <footer className="text-center py-6 text-gray-500 border-t">
-        © 2026 Tengku Haikal
-      </footer>
+      <Footer/>
     </div>
   );
 };
@@ -136,6 +168,15 @@ const ProjectCard = ({ title, tags, desc }) => (
       ))}
     </div>
 
+    <p className="text-sm text-gray-600">{desc}</p>
+  </div>
+);
+
+const EducationCard = ({ year, degree, institution, desc }) => (
+  <div className="bg-white p-6 border-l-4">
+    <span className="text-sm text-gray-400">{year}</span>
+    <h3 className="text-lg font-semibold">{degree}</h3>
+    <p className="text-sm text-gray-500 mb-2">{institution}</p>
     <p className="text-sm text-gray-600">{desc}</p>
   </div>
 );

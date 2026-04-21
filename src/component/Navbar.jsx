@@ -53,17 +53,6 @@ const Navbar = () => {
             Resume
           </a>
 
-          <button
-            onClick={login}
-            className="text-sm bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition"
-          >
-            Login
-          </button>
-{isAdmin && (
-            <Link to="/admin" className="text-sm underline">
-              Admin
-            </Link>
-          )}
         </div>
 
         {/* MOBILE BUTTON */}
@@ -95,18 +84,8 @@ const Navbar = () => {
             </a>
           ))}
 
-          <button
-            onClick={login}
-            className="text-sm bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition"
-          >
-            Login
-          </button>
+        
 
-{isAdmin && (
-            <Link to="/admin" className="text-sm underline">
-              Admin
-            </Link>
-          )}
         </div>
       </div>
 
