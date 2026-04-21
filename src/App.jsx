@@ -134,7 +134,7 @@ const Portfolio = () => {
 /* --- SUB-COMPONENTS FOR CLEANER CODE --- */
 
 const ExperienceCard = ({ year, title, org, desc, color }) => (
-  <div className={`w-full border-4 border-black ${color} p-6 shadow-flat hover:-translate-x-1 hover:-translate-y-1 hover:shadow-flat-lg transition-all cursor-pointer`}>
+  <div className={`w-full border-4 border-black hover:${color} p-6 shadow-flat hover:-translate-x-1 hover:-translate-y-1 hover:shadow-flat-lg transition-all cursor-pointer`}>
     <span className="font-display font-black text-accent">{year}</span>
     <h3 className="font-display text-xl font-black uppercase">{title}</h3>
     <p className="font-display font-bold text-sm opacity-70 mb-2">{org}</p>
