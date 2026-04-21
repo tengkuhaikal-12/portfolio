@@ -1,23 +1,25 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
 
-const ADMIN_EMAIL = "haikaltengku836@gmail.com";
-
 const ProtectedRoute = ({ children }) => {
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
 
+    // ⏳ wait for Firebase
     if (user === undefined) {
-        return <div>Loading...</div>; // IMPORTANT
+        return <div>Loading...</div>;
     }
 
+    // ❌ not logged in
     if (!user) {
         return <Navigate to="/" />;
     }
 
-    if (user.email !== ADMIN_EMAIL) {
+    // ❌ not admin
+    if (!isAdmin) {
         return <Navigate to="/" />;
     }
 
+    // ✅ allow
     return children;
 };
 

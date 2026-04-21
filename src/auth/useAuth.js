@@ -5,7 +5,7 @@ import { auth } from "../firebase/firebase";
 const ADMIN_EMAIL = "haikaltengku836@gmail.com";
 
 export const useAuth = () => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(undefined); // 🔥 IMPORTANT
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {

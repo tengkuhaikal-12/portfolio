@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../firebase/firebase";
+import { useAuth } from "../auth/useAuth";
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const {isAdmin} = useAuth();
 
+  const login = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+
+    if (result.user.email === "haikaltengku836@gmail.com") {
+      navigate("/admin");
+    } else {
+      alert("Not authorized");
+    }
+  };
   const navLinks = [
     { name: 'Experience', href: '#experience' },
     { name: 'Projects', href: '#projects' },
@@ -38,9 +53,17 @@ const Navbar = () => {
             Resume
           </a>
 
-          <Link to="/admin" className="text-sm underline">
-            Admin
-          </Link>
+          <button
+            onClick={login}
+            className="text-sm bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition"
+          >
+            Login
+          </button>
+{isAdmin && (
+            <Link to="/admin" className="text-sm underline">
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* MOBILE BUTTON */}
@@ -72,7 +95,18 @@ const Navbar = () => {
             </a>
           ))}
 
-          <Link to="/admin" className="text-gray-600 hover:text-white hover:bg-black rounded-full px-4 py-1.5 transition">Admin</Link>
+          <button
+            onClick={login}
+            className="text-sm bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition"
+          >
+            Login
+          </button>
+
+{isAdmin && (
+            <Link to="/admin" className="text-sm underline">
+              Admin
+            </Link>
+          )}
         </div>
       </div>
 
