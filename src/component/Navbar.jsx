@@ -23,19 +23,20 @@ const Navbar = () => {
     { name: 'Experience', href: '#experience' },
     { name: 'Projects', href: '#projects' },
     { name: 'Contact', href: '#contact' },
+    { name: 'Education', href: '#education' },
   ];
 
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-5xl">
 
       {/* MAIN BAR */}
-      <div className="bg-white/70 backdrop-blur-lg rounded-full shadow-md px-6 py-2 flex justify-between items-center border border-gray-200 bg-brand">
+      <div className="bg-white/20 backdrop-blur-lg rounded-full shadow-md pl-4 pr-1 py-1 flex justify-between items-center border border-gray-200">
 
         {/* LOGO */}
         <a href='/'><img src="/haikal-logo.svg" alt="logo" className="h-9 cursor-pointer"/></a>
 
         {/* DESKTOP */}
-        <div className="hidden md:flex gap-6 items-center">
+        <div className="hidden md:flex gap-1 items-center">
           {navLinks.map(link => (
             <a
               key={link.name}
@@ -45,13 +46,6 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-
-          <a
-            href="/resume.pdf"
-            className="bg-black text-white px-4 py-1.5 rounded-full text-sm hover:bg-gray-800 transition"
-          >
-            Resume
-          </a>
 
         </div>
 

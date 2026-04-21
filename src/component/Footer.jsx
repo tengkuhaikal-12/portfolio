@@ -1,22 +1,30 @@
 import {React} from 'react';
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { useAuth } from "../auth/useAuth";
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+
 
 const Footer = () => {
-    const { isAdmin } = useAuth();
+    const { user, isAdmin } = useAuth();
+
+    const navigate = useNavigate();
 
     const login = async () => {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
 
-        if (result.user.email === "haikaltengku836@gmail.com") {
-            navigate("/admin");
-        } else {
+        if (result.user.email !== "haikaltengku836@gmail.com") {
             alert("Not authorized");
+            await auth.signOut();
         }
     };
+
+    const logout = async () => {
+        await signOut(auth);
+    };
+
     return (
         <footer className="bg-black text-gray-400 border-t py-10">
             <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -32,12 +40,24 @@ const Footer = () => {
 
                     <img src="/haikal-logo.svg" alt="Logo" className="mt-4 h-20" />
 
-                    <button
-                        onClick={login}
-                        className="mt-4 text-sm bg-white text-black px-4 py-1.5 rounded-full hover:bg-gray-500 hover:text-white transition"
-                    >
-                        Authenticate
-                    </button>
+                    <div className=' flex justify-between content-center w-max mt-4    gap-4 '>
+                        <button
+                            onClick={isAdmin ? () => navigate("/admin") : login}
+                            className=" text-sm bg-white text-black px-4 py-1.5 rounded-full hover:bg-black hover:text-white transition cursor-pointer"
+                        >
+                            {isAdmin ? "Admin" : "Authenticate"}
+                        </button>
+
+                        {isAdmin && (
+                            <button
+                                onClick={logout}
+                                className="text-sm bg-danger text-white px-4 py-1.5 rounded-full hover:bg-danger-hover hover:text-white transition cursor-pointer"
+                            >
+                                Logout
+                            </button>
+                        )}
+                    </div>
+
                 </div>
 
                 {/* Column 2: About */}
@@ -88,17 +108,7 @@ const Footer = () => {
                         </li>
                     </ul>
                 </div>
-
             </div>
-
-            {/* Admin (optional bottom row) */}
-            {isAdmin && (
-                <div className="mt-6">
-                    <Link to="/admin" className="text-sm underline hover:text-white">
-                        Admin
-                    </Link>
-                </div>
-            )}
         </footer>
     );
 };

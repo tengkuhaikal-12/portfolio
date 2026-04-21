@@ -9,6 +9,7 @@
 
   /* NEW CORE COLORS */
   --color-danger: #FF0000;  /* Pure Red */
+  --color-danger-hover: #CC0000; /* Darker Red for Hover */
   --color-info: #00FFFF;    /* Cyan */
   --color-warning: #FFA500; /* Orange */
 
@@ -25,6 +26,7 @@
 
   /* KEEP BASE */
   --color-bg: #FFFFFF;
+  --color-bg-hover: #F0F0F0;
   --color-text: #000000;
   --color-border-hard: #000000;
 

@@ -1,26 +1,43 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
+import { useEffect, useState } from "react";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedAdmin = ({ children }) => {
     const { user, isAdmin } = useAuth();
+    const navigate = useNavigate();
+    const [time, setTime] = useState(5);
 
-    // ⏳ wait for Firebase
-    if (user === undefined) {
-        return <div>Loading...</div>;
-    }
+    useEffect(() => {
+        if (!isAdmin) {
+            const interval = setInterval(() => {
+                setTime((t) => t - 1);
+            }, 1000);
 
-    // ❌ not logged in
-    if (!user) {
-        return <Navigate to="/" />;
-    }
+            const timer = setTimeout(() => {
+                navigate("/");
+            }, 5000);
 
-    // ❌ not admin
+            return () => {
+                clearInterval(interval);
+                clearTimeout(timer);
+            };
+        }
+    }, [isAdmin, navigate]);
+
     if (!isAdmin) {
-        return <Navigate to="/" />;
+        return (
+            <div className="h-screen flex flex-col items-center justify-center text-white bg-black">
+                <h1 className="text-2xl mb-2">🚫 Access Denied (Admin only)</h1>
+
+                <p className="text-gray-400">
+                    Redirecting to home in{" "}
+                    <span className="text-white font-bold">{time}</span> s...
+                </p>
+            </div>
+        );
     }
 
-    // ✅ allow
     return children;
 };
 
-export default ProtectedRoute;
+export default ProtectedAdmin;
