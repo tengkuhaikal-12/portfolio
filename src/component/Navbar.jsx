@@ -52,7 +52,7 @@ const Navbar = () => {
         {/* MOBILE BUTTON */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden relative w-8 h-8 flex items-center justify-center cursor-pointer"
+          className="md:hidden relative w-8 h-8 flex items-center justify-center cursor-pointer mr-2"
         >
           <span className={`absolute w-5 h-[2px] bg-black transition ${isOpen ? "rotate-45" : "-translate-y-1.5"}`} />
           <span className={`absolute w-5 h-[2px] bg-black transition ${isOpen ? "opacity-0" : ""}`} />
