@@ -52,7 +52,7 @@
 @layer base {
   html {
     image-rendering: pixelated;
-    -webkit-font-smoothing: none;
+    -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: grayscale;
     /* Forces layout engine to use crisp edges for lines/borders */
     shape-rendering: crispEdges;
