@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +17,7 @@ const Navbar = () => {
       <div className="bg-white/70 backdrop-blur-lg rounded-full shadow-md px-6 py-2 flex justify-between items-center border border-gray-200 bg-brand">
 
         {/* LOGO */}
-        <img src="/haikal-logo.svg" alt="logo" className="h-9 cursor-pointer"/>
+        <a href='/'><img src="/haikal-logo.svg" alt="logo" className="h-9 cursor-pointer"/></a>
 
         {/* DESKTOP */}
         <div className="hidden md:flex gap-6 items-center">
@@ -36,6 +37,10 @@ const Navbar = () => {
           >
             Resume
           </a>
+
+          <Link to="/admin" className="text-sm underline">
+            Admin
+          </Link>
         </div>
 
         {/* MOBILE BUTTON */}
@@ -51,7 +56,7 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ${
+        className={`md:hidden overflow-hidden transition-all duration-500 ${
           isOpen ? "max-h-60 opacity-100 mt-2" : "max-h-0 opacity-0"
         }`}
       >
@@ -66,6 +71,8 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
+
+          <Link to="/admin" className="text-gray-600 hover:text-white hover:bg-black rounded-full px-4 py-1.5 transition">Admin</Link>
         </div>
       </div>
 

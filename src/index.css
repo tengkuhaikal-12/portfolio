@@ -60,6 +60,15 @@
 
   body {
     @apply bg-bg text-text;
-    font-family: var(--font-body)
+    font-family: var(--font-body);
+    @apply bg-gradient-to-br from-gray-100 via-white to-gray-200;
   }
+
+  .glass {
+  @apply bg-white/60 backdrop-blur-xl border border-white/30;
+}
+
+.glass-strong {
+  @apply bg-white/30 backdrop-blur-2xl border border-white/40 shadow-xl;
+}
 }
