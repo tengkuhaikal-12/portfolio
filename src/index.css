@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
 
 @theme {
   /* EXISTING */
@@ -29,7 +30,7 @@
 
   /* 2. PIXELATED & SHARP TEXT */
   --font-display: "Jetbrains Mono", "Courier New", Courier, monospace;
-  --font-body: "Helvetica", sans-serif;
+  --font-body: "Jetbrains Mono","Helvetica", sans-serif;
 
   /* 3. NO ROUNDED CORNERS (FIXED) */
   /* We define the base radius and specific steps manually to override defaults */
