@@ -1,19 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  /* 1. BRIGHT, HIGH-CONTRAST COLORS */
-  --color-brand: #FFFF00;
-  /* Neon Yellow */
-  --color-accent: #FF00FF;
-  /* Magenta */
-  --color-success: #00FF00;
-  /* Pure Green */
+  /* EXISTING */
+  --color-brand: #FFFF00;   /* Neon Yellow */
+  --color-accent: #FF00FF;  /* Magenta */
+  --color-success: #00FF00; /* Green */
+
+  /* NEW CORE COLORS */
+  --color-danger: #FF0000;  /* Pure Red */
+  --color-info: #00FFFF;    /* Cyan */
+  --color-warning: #FFA500; /* Orange */
+
+  /* EXTENDED NEON SET */
+  --color-electric-blue: #0000FF;
+  --color-lime: #BFFF00;
+  --color-hot-pink: #FF1493;
+  --color-violet: #8A2BE2;
+
+  /* DARK CONTRAST OPTIONS */
+  --color-bg-dark: #111111;
+  --color-panel: #F5F5F5;
+  --color-muted: #888888;
+
+  /* KEEP BASE */
   --color-bg: #FFFFFF;
   --color-text: #000000;
   --color-border-hard: #000000;
 
   /* 2. PIXELATED & SHARP TEXT */
-  --font-display: "Courier New", Courier, monospace;
+  --font-display: "Jetbrains Mono", "Courier New", Courier, monospace;
   --font-body: "Helvetica", sans-serif;
 
   /* 3. NO ROUNDED CORNERS (FIXED) */

@@ -25,7 +25,7 @@ const Portfolio = () => {
             UNIVERSITI MALAYA STUDENT | SOFTWARE DEVELOPER
           </p>
 
-          <p className="font-display text-lg max-w-2xl font-bold leading-tight">
+          <p className="font-display text-l max-w-2xl font-bold leading-tight">
             BUILDING HIGH-PERFORMANCE WEB APPS AND TOOLS WITH A FOCUS ON
             CLEAN ARCHITECTURE AND BOLD DESIGN. CURRENTLY SPECIALIZING IN
             REACT, FLASK, AND DATA SYSTEMS.
@@ -37,8 +37,8 @@ const Portfolio = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 m-16">
 
         {/* --- EXPERIENCE SECTION (Left Column) --- */}
-        <aside className="lg:col-span-4 space-y-8" id='experience'>
-          <h2 className="font-display text-3xl font-black uppercase bg-accent text-white px-4 py-1 border-4 border-black inline-block shadow-flat">
+        <aside className="lg:col-span-4 space-y-8 scroll-mt-24" id='experience'>
+          <h2 className="font-display text-2xl font-black uppercase bg-accent text-white px-4 py-1 border-4 border-black inline-block shadow-flat">
             Experience
           </h2>
 
@@ -48,7 +48,7 @@ const Portfolio = () => {
               title="MathsTech: Maths and Technology Free Tuition"
               org="Volunteerism"
               desc="Teaching high schoolers Python fundamentals and application logic."
-              color='bg-accent'
+              color='bg-lime'
             />
             <ExperienceCard
               year="2025"
@@ -81,8 +81,8 @@ const Portfolio = () => {
         </aside>
 
         {/* --- PROJECTS SECTION (Right Column) --- */}
-        <main className="lg:col-span-8 space-y-8" id='projects'>
-          <h2 className="font-display text-3xl font-black uppercase bg-black text-brand px-4 py-1 border-4 border-black inline-block shadow-flat">
+        <main className="lg:col-span-8 space-y-8 scroll-mt-24" id='projects'>
+          <h2 className="font-display text-2xl font-black uppercase bg-black text-brand px-4 py-1 border-4 border-black inline-block shadow-flat">
             Projects
           </h2>
 
@@ -144,7 +144,7 @@ const ExperienceCard = ({ year, title, org, desc, color }) => (
 
 const ProjectCard = ({ title, tags, desc, color }) => (
   <div className={`border-4 border-black ${color} p-6 shadow-flat hover:-translate-x-1 hover:-translate-y-1 hover:shadow-flat-lg transition-all cursor-pointer`}>
-    <h3 className="font-display text-2xl font-black uppercase mb-2">{title}</h3>
+    <h3 className="font-display text-xl font-black uppercase mb-2">{title}</h3>
     <div className="flex flex-wrap gap-2 mb-4">
       {tags.map(tag => (
         <span key={tag} className="bg-black text-white text-[10px] px-2 font-bold uppercase tracking-widest">{tag}</span>

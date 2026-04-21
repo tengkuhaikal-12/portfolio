@@ -14,7 +14,7 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto flex justify-between items-center">
 
                 {/* LOGO */}
-                <div className="font-display text-2xl font-black uppercase tracking-tighter">
+                <div className="font-display text-l font-black uppercase tracking-tighter">
                     <a href="/" className="hover:text-accent transition-colors">
                         <img src="/haikal-logo.svg" alt="TMHTA" className='h-15 w-auto object-contain'/>
                     </a>
@@ -69,7 +69,7 @@ const Navbar = () => {
                             key={link.name}
                             href={link.href}
                             onClick={() => setIsOpen(false)}
-                            className="font-display font-black uppercase text-2xl border-b-2 border-black pb-2 hover:bg-black hover:text-white transition-colors"
+                            className="font-display font-black uppercase text-l border-b-2 border-black pb-2 hover:bg-black hover:text-white transition-colors"
                         >
                             {link.name}
                         </a>
