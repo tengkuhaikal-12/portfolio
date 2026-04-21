@@ -1,83 +1,76 @@
 import React, { useState } from 'react';
 
 const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    const navLinks = [
-        { name: 'Experience', href: '#experience' },
-        { name: 'Projects', href: '#projects' },
-        { name: 'Contact', href: '#contact' },
-    ];
+  const navLinks = [
+    { name: 'Experience', href: '#experience' },
+    { name: 'Projects', href: '#projects' },
+    { name: 'Contact', href: '#contact' },
+  ];
 
-    return (
-        <nav className={`sticky top-0 z-50 border-b-4 border-black px-6 py-4 transition-shadow bg-white`}>
-            <div className="max-w-7xl mx-auto flex justify-between items-center">
+  return (
+    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-5xl">
 
-                {/* LOGO */}
-                <div className="font-display text-l font-black uppercase tracking-tighter">
-                    <a href="/" className="hover:text-accent transition-colors">
-                        <img src="/haikal-logo.svg" alt="TMHTA" className='h-15 w-auto object-contain'/>
-                    </a>
-                </div>
+      {/* MAIN BAR */}
+      <div className="bg-white/70 backdrop-blur-lg rounded-full shadow-md px-6 py-2 flex justify-between items-center border border-gray-200 bg-brand">
 
-                {/* DESKTOP NAV */}
-                <div className="hidden md:flex items-center gap-8">
-                    {navLinks.map((link) => (
-                        <a
-                            key={link.name}
-                            href={link.href}
-                            className="font-display font-black uppercase text-sm hover:bg-black hover:text-white px-2 py-1 transition-all font-20 border-2"
-                        >
-                            {link.name}
-                        </a>
-                    ))}
-                    <a
-                        href="/resume.pdf"
-                        className="bg-brand border-2 border-black px-4 py-1 font-display font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                    >
-                        Resume
-                    </a>
-                </div>
+        {/* LOGO */}
+        <img src="/haikal-logo.svg" alt="logo" className="h-9 cursor-pointer"/>
 
-                {/* MOBILE MENU BUTTON */}
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="md:hidden border-2 border-black p-2 bg-accent relative w-8 h-8 flex items-center justify-center"
-                >
-                    <span
-                        className={`absolute w-6 h-1 bg-black transition-all duration-300 ${isOpen ? "rotate-45" : "-translate-y-2"
-                            }`}
-                    ></span>
+        {/* DESKTOP */}
+        <div className="hidden md:flex gap-6 items-center">
+          {navLinks.map(link => (
+            <a
+              key={link.name}
+              href={link.href}
+              className="text-sm text-gray-600 hover:text-white hover:bg-black px-4 py-1.5 rounded-full transition font-medium"
+            >
+              {link.name}
+            </a>
+          ))}
 
-                    <span
-                        className={`absolute w-6 h-1 bg-black transition-all duration-300 ${isOpen ? "opacity-0" : ""
-                            }`}
-                    ></span>
+          <a
+            href="/resume.pdf"
+            className="bg-black text-white px-4 py-1.5 rounded-full text-sm hover:bg-gray-800 transition"
+          >
+            Resume
+          </a>
+        </div>
 
-                    <span
-                        className={`absolute w-6 h-1 bg-black transition-all duration-300 ${isOpen ? "-rotate-45" : "translate-y-2"
-                            }`}
-                    ></span>
-                </button>
-            </div>
+        {/* MOBILE BUTTON */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden relative w-8 h-8 flex items-center justify-center cursor-pointer"
+        >
+          <span className={`absolute w-5 h-[2px] bg-black transition ${isOpen ? "rotate-45" : "-translate-y-1.5"}`} />
+          <span className={`absolute w-5 h-[2px] bg-black transition ${isOpen ? "opacity-0" : ""}`} />
+          <span className={`absolute w-5 h-[2px] bg-black transition ${isOpen ? "-rotate-45" : "translate-y-1.5"}`} />
+        </button>
+      </div>
 
-            {/* MOBILE DROPDOWN */}
-            {isOpen && (
-                <div className="md:hidden absolute top-[100%] right-0 bg-accent border-4 border-black p-6 flex flex-col gap-4 animate-in slide-in-from-top duration-300">
-                    {navLinks.map((link) => (
-                        <a
-                            key={link.name}
-                            href={link.href}
-                            onClick={() => setIsOpen(false)}
-                            className="font-display font-black uppercase text-l border-b-2 border-black pb-2 hover:bg-black hover:text-white transition-colors"
-                        >
-                            {link.name}
-                        </a>
-                    ))}
-                </div>
-            )}
-        </nav>
-    );
+      {/* MOBILE MENU */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ${
+          isOpen ? "max-h-60 opacity-100 mt-2" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-md p-4 flex flex-col border border-gray-200">
+          {navLinks.map(link => (
+            <a
+              key={link.name}
+              href={link.href}
+              onClick={() => setIsOpen(false)}
+              className="text-gray-600 hover:text-white hover:bg-black rounded-full px-4 py-1.5 transition"
+            >
+              {link.name}
+            </a>
+          ))}
+        </div>
+      </div>
+
+    </nav>
+  );
 };
 
 export default Navbar;

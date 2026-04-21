@@ -34,14 +34,14 @@
 
   /* 3. NO ROUNDED CORNERS (FIXED) */
   /* We define the base radius and specific steps manually to override defaults */
-  --radius: 0px;
+  /* --radius: 0px;
   --radius-sm: 0px;
   --radius-md: 0px;
   --radius-lg: 0px;
   --radius-xl: 0px;
   --radius-2xl: 0px;
   --radius-3xl: 0px;
-  --radius-full: 0px;
+  --radius-full: 0px; */
 
   /* 4. FLAT SURFACE (HARD SHADOW) */
   --shadow-flat: 4px 4px 0px #000000;
@@ -56,13 +56,6 @@
     -moz-osx-font-smoothing: grayscale;
     /* Forces layout engine to use crisp edges for lines/borders */
     shape-rendering: crispEdges;
-  }
-
-  /* Global reset to ensure no hidden border-radii leak in from browser defaults */
-  *,
-  ::before,
-  ::after {
-    border-radius: 0px !important;
   }
 
   body {
