@@ -45,21 +45,24 @@ const Portfolio = () => {
           <div className="space-y-6">
             <ExperienceCard
               year="2026"
-              title="Python Lead"
-              org="GUAMSS Volunteerism"
+              title="MathsTech: Maths and Technology Free Tuition"
+              org="Volunteerism"
               desc="Teaching high schoolers Python fundamentals and application logic."
+              color='bg-accent'
             />
             <ExperienceCard
               year="2025"
-              title="Full Stack Dev"
+              title="SULAM Heritage Conservation Platform"
               org="Badan Warisan Malaysia"
-              desc="Built a heritage conservation platform using React and Dicebear API."
+              desc="Built a heritage conservation platform using React."
+              color='bg-brand'
             />
             <ExperienceCard
               year="2025"
               title="Researcher"
               org="Budi95 Analysis"
               desc="Analyzed petrol transaction efficiency using Python and Pearson correlation."
+              color='bg-success'
             />
           </div>
 
@@ -86,13 +89,13 @@ const Portfolio = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ProjectCard
               title="Battlestation Rater"
-              tags={["Flask", "CV", "CSS"]}
+              tags={["React", "Tailwind", "CSS"]}
               desc="A web app that scores gaming setups using image analysis and drag-and-drop UI."
               color="bg-white"
             />
             <ProjectCard
               title="SULAM Heritage"
-              tags={["React", "PostgreSQL"]}
+              tags={["React", "Tailwind", "CSS"]}
               desc="Digital archive for Malaysian heritage sites with a brutalist dark-mode UI."
               color="bg-brand"
             />
@@ -130,17 +133,17 @@ const Portfolio = () => {
 
 /* --- SUB-COMPONENTS FOR CLEANER CODE --- */
 
-const ExperienceCard = ({ year, title, org, desc }) => (
-  <div className="border-l-4 border-black pl-4 py-2">
+const ExperienceCard = ({ year, title, org, desc, color }) => (
+  <div className={`w-full border-4 border-black ${color} p-6 shadow-flat hover:-translate-x-1 hover:-translate-y-1 hover:shadow-flat-lg transition-all cursor-pointer`}>
     <span className="font-display font-black text-accent">{year}</span>
     <h3 className="font-display text-xl font-black uppercase">{title}</h3>
-    <p className="font-bold text-sm opacity-70 mb-2">{org}</p>
+    <p className="font-display font-bold text-sm opacity-70 mb-2">{org}</p>
     <p className="text-sm font-medium leading-tight">{desc}</p>
   </div>
 );
 
 const ProjectCard = ({ title, tags, desc, color }) => (
-  <div className={`border-4 border-black ${color} p-6 shadow-flat hover:-translate-x-1 hover:-translate-y-1 hover:shadow-flat-lg transition-all cursor-crosshair`}>
+  <div className={`border-4 border-black ${color} p-6 shadow-flat hover:-translate-x-1 hover:-translate-y-1 hover:shadow-flat-lg transition-all cursor-pointer`}>
     <h3 className="font-display text-2xl font-black uppercase mb-2">{title}</h3>
     <div className="flex flex-wrap gap-2 mb-4">
       {tags.map(tag => (

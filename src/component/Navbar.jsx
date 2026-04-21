@@ -10,7 +10,7 @@ const Navbar = () => {
     ];
 
     return (
-        <nav className="sticky top-0 z-50 bg-white border-b-4 border-black px-6 py-4">
+        <nav className={`sticky top-0 z-50 border-b-4 border-black px-6 py-4 transition-shadow bg-white`}>
             <div className="max-w-7xl mx-auto flex justify-between items-center">
 
                 {/* LOGO */}
@@ -42,23 +42,34 @@ const Navbar = () => {
                 {/* MOBILE MENU BUTTON */}
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="md:hidden border-2 border-black p-1 bg-accent"
+                    className="md:hidden border-2 border-black p-2 bg-accent relative w-8 h-8 flex items-center justify-center"
                 >
-                    <div className="w-6 h-1 bg-black mb-1"></div>
-                    <div className="w-6 h-1 bg-black mb-1"></div>
-                    <div className="w-6 h-1 bg-black"></div>
+                    <span
+                        className={`absolute w-6 h-1 bg-black transition-all duration-300 ${isOpen ? "rotate-45" : "-translate-y-2"
+                            }`}
+                    ></span>
+
+                    <span
+                        className={`absolute w-6 h-1 bg-black transition-all duration-300 ${isOpen ? "opacity-0" : ""
+                            }`}
+                    ></span>
+
+                    <span
+                        className={`absolute w-6 h-1 bg-black transition-all duration-300 ${isOpen ? "-rotate-45" : "translate-y-2"
+                            }`}
+                    ></span>
                 </button>
             </div>
 
             {/* MOBILE DROPDOWN */}
             {isOpen && (
-                <div className="md:hidden absolute top-[100%] left-0 w-full bg-white border-b-4 border-black p-6 flex flex-col gap-4 animate-in slide-in-from-top duration-300">
+                <div className="md:hidden absolute top-[100%] right-0 bg-accent border-4 border-black p-6 flex flex-col gap-4 animate-in slide-in-from-top duration-300">
                     {navLinks.map((link) => (
                         <a
                             key={link.name}
                             href={link.href}
                             onClick={() => setIsOpen(false)}
-                            className="font-display font-black uppercase text-2xl border-b-2 border-black pb-2"
+                            className="font-display font-black uppercase text-2xl border-b-2 border-black pb-2 hover:bg-black hover:text-white transition-colors"
                         >
                             {link.name}
                         </a>
