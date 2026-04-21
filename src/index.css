@@ -67,5 +67,6 @@
 
   body {
     @apply bg-bg text-text;
+    font-family: var(--font-body)
   }
 }
