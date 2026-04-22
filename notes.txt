@@ -1,3 +1,4 @@
 1. buat input elok kat admin.jsx
 2. connect database untuk upload new
 3. test and deploy
+4. IMPORTANT fix description untuk semua
