@@ -15,7 +15,7 @@ const Footer = () => {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
 
-        if (result.user.email !== "haikaltengku836@gmail.com") {
+        if (!result.user) {
             alert("Not authorized");
             await auth.signOut();
         }
@@ -47,15 +47,6 @@ const Footer = () => {
                         >
                             {isAdmin ? "Admin" : "Authenticate"}
                         </button>
-
-                        {isAdmin && (
-                            <button
-                                onClick={logout}
-                                className="text-sm bg-danger text-white px-4 py-1.5 rounded-full hover:bg-danger-hover hover:text-white transition cursor-pointer"
-                            >
-                                Logout
-                            </button>
-                        )}
                     </div>
 
                 </div>

@@ -2,17 +2,20 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 
-const ADMIN_EMAIL = "haikaltengku836@gmail.com";
+// Use an array to store multiple authorized emails
+const ADMIN_EMAILS = ["haikaltengku836@gmail.com", "diaryoftmhta@gmail.com"];
 
 export const useAuth = () => {
-    const [user, setUser] = useState(undefined); // 🔥 IMPORTANT
+    // null = not logged in, undefined = still checking, object = logged in
+    const [user, setUser] = useState(undefined);
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (u) => {
             setUser(u);
 
-            if (u?.email === ADMIN_EMAIL) {
+            // Use .includes() to check if the current email is in your admin list
+            if (u && u.email && ADMIN_EMAILS.includes(u.email)) {
                 setIsAdmin(true);
             } else {
                 setIsAdmin(false);
@@ -22,5 +25,5 @@ export const useAuth = () => {
         return () => unsub();
     }, []);
 
-    return { user, isAdmin };
+    return { user, isAdmin, loading: user === undefined };
 };
