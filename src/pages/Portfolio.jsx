@@ -15,8 +15,7 @@ const Portfolio = () => {
   const [education, setEducation] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin } = useAuth();
-  const navigate = useNavigate();
-
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedCollection, setSelectedCollection] = useState("");
@@ -63,16 +62,14 @@ const Portfolio = () => {
     }
   };
 
-  // 2. Add handleEdit logic
   const handleEdit = (collectionName, item) => {
     setSelectedItem(item);
     setSelectedCollection(collectionName);
     setIsModalOpen(true);
   };
 
-  // 3. Add Success Logic to update the UI immediately
   const handleUpdateSuccess = (collectionName, updatedItem) => {
-    const updateLocalState = (prev) => prev.map(item => item.id === updatedItem.id ? updatedItem : item);
+    const updateLocalState = (prev) => prev.map(item => item.id === updatedItem.id ? { ...item, ...updatedItem } : item);
     
     if (collectionName === "projects") setProjects(updateLocalState);
     if (collectionName === "experience") setExperience(updateLocalState);
@@ -89,27 +86,27 @@ const Portfolio = () => {
         <img
           src="/profile.jpg"
           alt="profile"
-          className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-md mb-6"
+          className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-md mb-6 border-4 border-white"
         />
         <h1 className="text-4xl md:text-6xl font-bold mb-4">Tengku Haikal</h1>
-        <p className="text-gray-500 mb-6">Universiti Malaya Student • Software Developer</p>
+        <p className="text-gray-500 mb-6 font-medium">Universiti Malaya Student • Software Developer</p>
         <p className="max-w-xl text-gray-600">
           Building clean, high-performance applications with focus on modern UI and scalable architecture.
         </p>
       </section>
 
       <div className="max-w-6xl mx-auto px-6 pb-20 space-y-20">
-
         {/* EXPERIENCE */}
         <section id="experience" className="scroll-mt-28">
-          <h2 className="text-2xl font-semibold mb-6">Experience</h2>
-          <div className="grid md:grid-cols-2 gap-6">
+          <h2 className="text-2xl font-bold mb-6 border-b-2 border-black inline-block">Experience</h2>
+          <div className="flex flex-col gap-6">
             {experience.map((exp) => (
               <ExperienceCard
                 key={exp.id}
                 year={exp.duration}
                 title={exp.title}
                 org={exp.subtitle}
+                image={exp.image}
                 desc={exp.description}
                 isAdmin={isAdmin}
                 onEdit={() => handleEdit("experience", exp)}
@@ -121,8 +118,8 @@ const Portfolio = () => {
 
         {/* PROJECTS */}
         <section id="projects" className="scroll-mt-28">
-          <h2 className="text-2xl font-semibold mb-6">Projects</h2>
-          <div className="grid md:grid-cols-2 gap-6">
+          <h2 className="text-2xl font-bold mb-6 border-b-2 border-black inline-block">Projects</h2>
+          <div className="flex flex-col gap-6">
             {projects.map((proj) => (
               <ProjectCard
                 key={proj.id}
@@ -140,7 +137,7 @@ const Portfolio = () => {
 
         {/* EDUCATION */}
         <section id="education" className="scroll-mt-28">
-          <h2 className="text-2xl font-semibold mb-6">Education</h2>
+          <h2 className="text-2xl font-bold mb-6 border-b-2 border-black inline-block">Education</h2>
           <div className="flex flex-col gap-6">
             {education.map((edu) => (
               <EducationCard
@@ -154,15 +151,6 @@ const Portfolio = () => {
                 onDelete={() => handleDelete("education", edu.id)}
               />
             ))}
-          </div>
-        </section>
-
-        <section id="contact" className="scroll-mt-28 text-center">
-          <h2 className="text-2xl font-semibold mb-4">Contact</h2>
-          <p className="text-gray-600 mb-6">Let’s build something together.</p>
-          <div className="flex justify-center gap-4">
-            <a href="#" className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">GitHub</a>
-            <a href="#" className="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition">LinkedIn</a>
           </div>
         </section>
       </div>
@@ -184,57 +172,54 @@ const Portfolio = () => {
 
 const ControlButtons = ({ onEdit, onDelete }) => (
   <div className="flex gap-1 shrink-0">
-    <button
-      onClick={onEdit}
-      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer"
-    >
+    <button onClick={onEdit} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer">
       <IoPencilOutline size={18} />
     </button>
-    <button
-      onClick={onDelete}
-      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all cursor-pointer"
-    >
+    <button onClick={onDelete} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all cursor-pointer">
       <IoTrashOutline size={18} />
     </button>
   </div>
 );
 
-const ExperienceCard = ({ year, title, org, desc, isAdmin, onEdit, onDelete }) => (
-  <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-row justify-between items-start border border-gray-100">
-    <div className="pr-2">
-      <span className="text-sm text-gray-400">{year}</span>
-      <h3 className="text-lg font-semibold capitalize">{title}</h3>
-      <p className="text-sm text-gray-500 mb-2">{org}</p>
-      <p className="text-sm text-gray-600">{desc}</p>
+const ExperienceCard = ({ year, title, org, image, desc, isAdmin, onEdit, onDelete }) => (
+  <div className={`flex flex-col bg-white shadow-md hover:shadow-lg transition overflow-hidden border border-gray-100 ${image ? "rounded-t-xl" : ""}`}>
+    {image && <img src={image} alt={title} className="w-full h-full border-b object-contain" />}
+    <div className="p-6 border-l-4 border-black flex flex-row justify-between items-start gap-2">
+      <div className="flex-grow">
+        <span className="text-xs font-bold text-gray-400 uppercase">{year}</span>
+        <h3 className="text-lg font-bold text-black mt-1 capitalize">{title}</h3>
+        <p className="text-sm font-semibold text-gray-500 mb-3">{org}</p>
+        <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
+      </div>
+      {isAdmin && <div className="pt-1"><ControlButtons onEdit={onEdit} onDelete={onDelete} /></div>}
     </div>
-    {isAdmin && <ControlButtons onEdit={onEdit} onDelete={onDelete} />}
   </div>
 );
 
 const ProjectCard = ({ title, tags, desc, image, isAdmin, onEdit, onDelete }) => (
-  <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden border border-gray-100 flex flex-col">
-    {image && <img src={image} alt={title} className="w-full h-48 object-cover border-b" />}
-    <div className="p-6 flex flex-row justify-between items-start gap-2">
+  <div className={`flex flex-col bg-white shadow-md hover:shadow-lg transition overflow-hidden border border-gray-100 ${image ? "rounded-t-xl" : ""}`}>
+    {image && <img src={image} alt={title} className="w-full h-full border-b object-contain" />}
+    <div className="p-6 border-l-4 border-black flex flex-row justify-between items-start gap-2">
       <div className="flex-grow">
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {tags.map((tag) => (
-            <span key={tag} className="text-xs bg-gray-100 px-2 py-1 rounded">{tag}</span>
+        <h3 className="text-lg font-bold text-black mb-2">{title}</h3>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {tags?.map((tag) => (
+            <span key={tag} className="text-[10px] font-black bg-gray-100 text-gray-700 px-2 py-1 rounded uppercase tracking-wider">{tag}</span>
           ))}
         </div>
-        <p className="text-sm text-gray-600">{desc}</p>
+        <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
       </div>
-      {isAdmin && <ControlButtons onEdit={onEdit} onDelete={onDelete} />}
+      {isAdmin && <div className="pt-1"><ControlButtons onEdit={onEdit} onDelete={onDelete} /></div>}
     </div>
   </div>
 );
 
 const EducationCard = ({ year, degree, institution, desc, isAdmin, onEdit, onDelete }) => (
-  <div className="bg-white p-6 shadow-md border-l-4 border-black hover:shadow-lg transition flex flex-row justify-between items-start">
+  <div className="bg-white p-6 shadow-md border-l-4 border-black hover:shadow-lg transition flex flex-row justify-between items-start border border-gray-100 rounded-xl overflow-hidden">
     <div className="pr-4">
-      <span className="text-sm text-gray-400 uppercase tracking-wide font-bold">{year}</span>
-      <h3 className="text-lg font-semibold capitalize">{degree}</h3>
-      <p className="text-sm text-gray-500 mb-2 capitalize">{institution}</p>
+      <span className="text-sm text-gray-400 font-bold uppercase">{year}</span>
+      <h3 className="text-lg font-bold text-black mt-1 capitalize">{degree}</h3>
+      <p className="text-sm font-semibold text-gray-500 mb-2 capitalize">{institution}</p>
       <p className="text-sm text-gray-600">{desc}</p>
     </div>
     {isAdmin && <ControlButtons onEdit={onEdit} onDelete={onDelete} />}
