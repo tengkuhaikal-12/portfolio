@@ -1,20 +1,28 @@
-<<<<<<< HEAD
 # my-portfolio
-=======
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Local dev
 
-Currently, two official plugins are available:
+- App: `npm run dev`
+- Netlify Functions + app together (recommended): `netlify dev`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Contact form (Netlify Functions)
 
-## React Compiler
+Flow: React (Vite) → Netlify Function → Nodemailer → Gmail inbox.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Function: `netlify/functions/contact.js`
+- Frontend endpoint default: `/.netlify/functions/contact`
+- Optional alias: `/api/contact` via `netlify.toml`
 
-## Expanding the ESLint configuration
+### Environment variables
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
->>>>>>> master
+Set in Netlify (Site settings → Environment variables):
+
+- `CONTACT_TO`
+- `SMTP_USER`
+- `SMTP_PASS` (Gmail App Password)
+- `SMTP_FROM` (optional; defaults to `SMTP_USER`)
+- `SMTP_HOST` / `SMTP_PORT` (optional; defaults to Gmail SMTP)
+- `ALLOWED_ORIGINS` (optional; comma-separated allowlist)
+
+For local dev, copy `.env.example` → `.env`. `netlify dev` will load it.
+

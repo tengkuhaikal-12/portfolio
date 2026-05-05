@@ -5,7 +5,14 @@ import { db } from "../firebase/firebase";
 import { collection, getDocs, query, orderBy, deleteDoc, doc } from "firebase/firestore";
 import Loading from "../component/Loading";
 import { useAuth } from "../auth/useAuth";
-import { IoTrashOutline, IoPencilOutline } from "react-icons/io5";
+import {
+  IoTrashOutline,
+  IoPencilOutline,
+  IoMailOutline,
+  IoLogoGithub,
+  IoLogoLinkedin,
+  IoLocationOutline,
+} from "react-icons/io5";
 import { Link } from "react-router-dom";
 import EditModal from "../component/EditModal";
 
@@ -19,6 +26,8 @@ const Portfolio = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedCollection, setSelectedCollection] = useState("");
+  const [contactForm, setContactForm] = useState({ name: "", email: "", message: "", website: "" });
+  const [contactStatus, setContactStatus] = useState({ state: "idle", message: "" });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,6 +75,42 @@ const Portfolio = () => {
     setSelectedItem(item);
     setSelectedCollection(collectionName);
     setIsModalOpen(true);
+  };
+
+  const handleContactChange = (key) => (e) => {
+    setContactForm((prev) => ({ ...prev, [key]: e.target.value }));
+  };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+
+    const endpoint =
+      import.meta.env.VITE_CONTACT_ENDPOINT || "/.netlify/functions/contact";
+
+    setContactStatus({ state: "loading", message: "" });
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: contactForm.name,
+          email: contactForm.email,
+          message: contactForm.message,
+          website: contactForm.website, // honeypot (bots often fill hidden fields)
+          // If you enable Turnstile on the frontend, pass `turnstileToken` here.
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to send message");
+      }
+
+      setContactForm({ name: "", email: "", message: "", website: "" });
+      setContactStatus({ state: "success", message: "Message sent. I'll get back to you soon." });
+    } catch (err) {
+      setContactStatus({ state: "error", message: err?.message || "Something went wrong. Try again later." });
+    }
   };
 
   const handleUpdateSuccess = (collectionName, updatedItem) => {
@@ -132,6 +177,7 @@ const Portfolio = () => {
                 isAdmin={isAdmin}
                 onEdit={() => handleEdit("projects", proj)}
                 onDelete={() => handleDelete("projects", proj.id)}
+                role={proj.subtitle}
               />
             ))}
           </div>
@@ -153,6 +199,108 @@ const Portfolio = () => {
                 onDelete={() => handleDelete("education", edu.id)}
               />
             ))}
+          </div>
+        </section>
+
+        {/* CONTACT */}
+        <section id="contact" className="scroll-mt-28">
+          <h2 className="text-2xl font-bold mb-6 border-b-2 border-text inline-block">Contact</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="ui-surface border ui-border shadow-md p-6">
+              <p className="ui-muted text-sm mb-5">
+                Want to collaborate or have a question? Send a message or reach me via the links below.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <ContactRow
+                  icon={<IoMailOutline size={18} />}
+                  label="Email"
+                  value="your@email.com"
+                  href="mailto:your@email.com"
+                />
+                <ContactRow
+                  icon={<IoLogoLinkedin size={18} />}
+                  label="LinkedIn"
+                  value="linkedin.com"
+                  href="https://linkedin.com"
+                />
+                <ContactRow
+                  icon={<IoLogoGithub size={18} />}
+                  label="GitHub"
+                  value="github.com"
+                  href="https://github.com"
+                />
+                <ContactRow
+                  icon={<IoLocationOutline size={18} />}
+                  label="Location"
+                  value="Kuala Lumpur, MY"
+                />
+              </div>
+            </div>
+
+            <form onSubmit={handleContactSubmit} className="ui-surface border ui-border shadow-md p-6">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="hidden" aria-hidden="true">
+                  <label className="text-sm font-black ui-muted">Website</label>
+                  <input
+                    value={contactForm.website}
+                    onChange={handleContactChange("website")}
+                    autoComplete="off"
+                    tabIndex={-1}
+                    className="w-full border ui-border bg-transparent px-4 py-2"
+                    placeholder="https://"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-black ui-muted">Name</label>
+                  <input
+                    value={contactForm.name}
+                    onChange={handleContactChange("name")}
+                    className="w-full border ui-border bg-transparent px-4 py-2 focus:outline-none focus:ring-2 focus:ring-text/20"
+                    placeholder="Your name"
+                    autoComplete="name"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-black ui-muted">Email</label>
+                  <input
+                    value={contactForm.email}
+                    onChange={handleContactChange("email")}
+                    className="w-full border ui-border bg-transparent px-4 py-2 focus:outline-none focus:ring-2 focus:ring-text/20"
+                    placeholder="you@example.com"
+                    type="email"
+                    autoComplete="email"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-black ui-muted">Message</label>
+                  <textarea
+                    value={contactForm.message}
+                    onChange={handleContactChange("message")}
+                    className="w-full min-h-[140px] border ui-border bg-transparent px-4 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-text/20"
+                    placeholder="Tell me what you're building..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={contactStatus.state === "loading"}
+                  className="w-full ui-action border px-4 py-2 font-black uppercase tracking-widest hover:bg-bg-hover transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {contactStatus.state === "loading" ? "Sending..." : "Send"}
+                </button>
+
+                {contactStatus.state === "success" ? (
+                  <p className="text-xs ui-muted">{contactStatus.message}</p>
+                ) : null}
+                {contactStatus.state === "error" ? (
+                  <p className="text-xs ui-muted text-red-600">{contactStatus.message}</p>
+                ) : null}
+              </div>
+            </form>
           </div>
         </section>
       </div>
@@ -224,7 +372,7 @@ const ExperienceCard = ({ id, year, title, org, image, desc, isAdmin, onEdit, on
   </Link>
 );
 
-const ProjectCard = ({ id, title, tags, desc, image, isAdmin, onEdit, onDelete }) => (
+const ProjectCard = ({ id, title, tags, desc, image, isAdmin, onEdit, onDelete, role }) => (
   <Link
     to={`/projects/${id}`}
     className="group flex flex-col md:flex-row ui-surface shadow-md hover:shadow-lg transition overflow-hidden border ui-border border-l-4 border-l-text"
@@ -238,6 +386,7 @@ const ProjectCard = ({ id, title, tags, desc, image, isAdmin, onEdit, onDelete }
     <div className="flex-1 p-6 flex flex-col sm:flex-row justify-between items-start gap-4 min-w-0">
       <div className="flex-grow min-w-0 flex flex-col max-h-48 overflow-hidden">
         <h3 className="text-lg font-black text-text mb-2 break-words line-clamp-1 group-hover:underline">{title}</h3>
+        <p className="text-sm font-black ui-muted mb-3 break-words line-clamp-1">{role}</p>
         <div className="flex flex-nowrap gap-2 mb-4 overflow-hidden">
           {tags?.map((tag) => (
             <span key={tag} className="text-[10px] font-black ui-pill border px-2 py-1 uppercase tracking-wider shrink-0 max-w-[10rem] truncate">
@@ -265,6 +414,27 @@ const EducationCard = ({ year, degree, institution, desc, isAdmin, onEdit, onDel
       <p className="text-sm ui-muted">{desc}</p>
     </div>
     {isAdmin && <ControlButtons onEdit={onEdit} onDelete={onDelete} />}
+  </div>
+);
+
+const ContactRow = ({ icon, label, value, href }) => (
+  <div className="flex items-start gap-3">
+    <div className="mt-0.5 ui-muted">{icon}</div>
+    <div className="min-w-0">
+      <div className="text-xs font-black uppercase tracking-widest ui-muted">{label}</div>
+      {href ? (
+        <a
+          className="text-sm font-black hover:underline break-words"
+          href={href}
+          target={href.startsWith("http") ? "_blank" : undefined}
+          rel={href.startsWith("http") ? "noreferrer" : undefined}
+        >
+          {value}
+        </a>
+      ) : (
+        <div className="text-sm font-black break-words">{value}</div>
+      )}
+    </div>
   </div>
 );
 

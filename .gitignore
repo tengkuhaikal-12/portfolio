@@ -25,3 +25,6 @@ dist-ssr
 
 .env
 .npm-cache/
+
+# Local Netlify folder
+.netlify
