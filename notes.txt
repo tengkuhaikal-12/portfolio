@@ -2,3 +2,5 @@
 2. connect database untuk upload new
 3. test and deploy
 4. IMPORTANT fix description untuk semua
+
+jhbjhb
