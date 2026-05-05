@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Loading = () => {
     return (
         <div className="min-h-screen bg-bg text-text flex flex-col items-center justify-center">

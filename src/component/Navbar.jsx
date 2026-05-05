@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from "../auth/useAuth";
-import { useTheme } from "../hooks/useTheme";
-import { IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
 
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   useAuth();
-  const { theme, toggle } = useTheme();
 
   // Intentionally keep auth imports available for future navbar actions.
   const navLinks = [
@@ -37,15 +34,6 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-
-          <button
-            onClick={toggle}
-            className="ml-1 w-10 h-10 rounded-full grid place-items-center ui-navlink hover:bg-text hover:text-bg transition cursor-pointer"
-            aria-label="Toggle theme"
-            title="Toggle theme"
-          >
-            {theme === "dark" ? <IoSunnyOutline size={18} /> : <IoMoonOutline size={18} />}
-          </button>
         </div>
 
         {/* MOBILE BUTTON */}
@@ -76,17 +64,6 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-
-          <button
-            onClick={() => {
-              toggle();
-              setIsOpen(false);
-            }}
-            className="mt-3 inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-full bg-text text-bg font-black uppercase tracking-widest text-xs hover:opacity-90 transition"
-          >
-            {theme === "dark" ? <IoSunnyOutline /> : <IoMoonOutline />}
-            {theme === "dark" ? "Light mode" : "Dark mode"}
-          </button>
 
         </div>
       </div>
