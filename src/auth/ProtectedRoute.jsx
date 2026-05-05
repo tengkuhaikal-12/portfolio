@@ -3,12 +3,12 @@ import { useAuth } from "./useAuth";
 import { useEffect, useState } from "react";
 
 const ProtectedAdmin = ({ children }) => {
-    const { isAdmin } = useAuth();
+    const { isAdmin, loading } = useAuth();
     const navigate = useNavigate();
     const [time, setTime] = useState(5);
 
     useEffect(() => {
-        if (!isAdmin) {
+        if (!loading && !isAdmin) {
             const interval = setInterval(() => {
                 setTime((t) => t - 1);
             }, 1000);
@@ -22,7 +22,16 @@ const ProtectedAdmin = ({ children }) => {
                 clearTimeout(timer);
             };
         }
-    }, [isAdmin, navigate]);
+    }, [isAdmin, loading, navigate]);
+
+    if (loading) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center text-paper bg-ink">
+                <h1 className="text-2xl mb-2">Checking access…</h1>
+                <p className="text-paper/70">Please wait.</p>
+            </div>
+        );
+    }
 
     if (!isAdmin) {
         return (

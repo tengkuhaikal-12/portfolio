@@ -4,11 +4,22 @@ import Navbar from "../../component/Navbar";
 import Footer from "../../component/Footer";
 import EditModal from "../../component/EditModal";
 import Lightbox from "../../component/Lightbox";
+import ConfirmModal from "../../component/ConfirmModal";
 import { useAuth } from "../../auth/useAuth";
 import { db, storage } from "../../firebase/firebase";
+import { FirebaseError } from "firebase/app";
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
-import { IoAddOutline, IoArrowBackOutline, IoCalendarOutline, IoLocationOutline, IoOpenOutline, IoPencilOutline } from "react-icons/io5";
+import {
+  IoAddOutline,
+  IoArrowBackOutline,
+  IoCalendarOutline,
+  IoLinkOutline,
+  IoLocationOutline,
+  IoOpenOutline,
+  IoPencilOutline,
+  IoTrashOutline,
+} from "react-icons/io5";
 import { FaGithub } from "react-icons/fa";
 
 const ItemDetailPage = ({ collectionName, kindLabel }) => {
@@ -24,6 +35,8 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [galleryUploadError, setGalleryUploadError] = useState("");
+  const [isSavingGallery, setIsSavingGallery] = useState(false);
+  const [removePhotoConfirm, setRemovePhotoConfirm] = useState({ open: false, src: "" });
 
   const heroRef = useRef(null);
   const galleryFileInputRef = useRef(null);
@@ -67,12 +80,31 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const galleryImages = useMemo(() => {
+  const galleryItems = useMemo(() => {
     const raw = item?.gallery || item?.images || item?.imageGallery || [];
     const list = Array.isArray(raw) ? raw : [];
-    const cleaned = list.filter(Boolean);
-    const unique = Array.from(new Set(cleaned));
-    const withoutHero = item?.image ? unique.filter((u) => u !== item.image) : unique;
+    const normalized = list
+      .map((g) => {
+        if (!g) return null;
+        if (typeof g === "string") return { src: g };
+        if (typeof g === "object") {
+          const src = g.src || g.url || g.image || "";
+          if (!src) return null;
+          return { src, href: g.href || g.link || g.projectUrl || "" };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    const seen = new Set();
+    const unique = [];
+    normalized.forEach((g) => {
+      if (seen.has(g.src)) return;
+      seen.add(g.src);
+      unique.push(g);
+    });
+
+    const withoutHero = item?.image ? unique.filter((g) => g.src !== item.image) : unique;
     return withoutHero;
   }, [item]);
 
@@ -116,35 +148,112 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
     setGalleryUploadError("");
     setIsUploadingGallery(true);
     try {
-      const uploadedUrls = [];
+      const uploaded = [];
       for (const file of files) {
         const safeName = (file.name || "image").replace(/[^\w.-]+/g, "_");
         const path = `${collectionName}/${id}/gallery/${Date.now()}_${safeName}`;
         const fileRef = storageRef(storage, path);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
-        uploadedUrls.push(url);
+        uploaded.push({ src: url });
       }
 
-      if (uploadedUrls.length) {
+      if (uploaded.length) {
         await updateDoc(doc(db, collectionName, id), {
-          gallery: arrayUnion(...uploadedUrls),
+          gallery: arrayUnion(...uploaded),
           updatedAt: serverTimestamp(),
         });
 
         setItem((prev) => {
           const prevItem = prev || {};
-          const existing = Array.isArray(prevItem.gallery) ? prevItem.gallery : [];
-          const merged = Array.from(new Set([...existing, ...uploadedUrls]));
+          const existingRaw = Array.isArray(prevItem.gallery) ? prevItem.gallery : [];
+          const existing = existingRaw
+            .map((g) => {
+              if (!g) return null;
+              if (typeof g === "string") return { src: g };
+              if (typeof g === "object") {
+                const src = g.src || g.url || g.image || "";
+                if (!src) return null;
+                return { src, href: g.href || g.link || g.projectUrl || "" };
+              }
+              return null;
+            })
+            .filter(Boolean);
+
+          const seen = new Set();
+          const merged = [];
+          [...existing, ...uploaded].forEach((g) => {
+            if (seen.has(g.src)) return;
+            seen.add(g.src);
+            merged.push(g);
+          });
           return { ...prevItem, gallery: merged };
         });
       }
     } catch (err) {
       console.error("Gallery upload failed:", err);
-      setGalleryUploadError("Upload failed. Please try again.");
+      const message =
+        err instanceof FirebaseError
+          ? (() => {
+              if (err.code === "storage/unauthorized") {
+                return "Upload blocked by Firebase Storage rules. Check your Storage rules and admin auth.";
+              }
+              if (err.code === "storage/unauthenticated") {
+                return "Upload requires sign-in. Please sign in and try again.";
+              }
+              // When the browser blocks the request (CORS/preflight), Firebase commonly surfaces a generic error.
+              // Give a concrete next step for local dev + production origins.
+              return `Upload failed (${err.code}). If your browser console shows a CORS/preflight error, apply bucket CORS using \`cors.json\` (e.g. \`gsutil cors set cors.json gs://<your-bucket>\`).`;
+            })()
+          : "Upload failed. Please try again.";
+      setGalleryUploadError(message);
     } finally {
       setIsUploadingGallery(false);
     }
+  };
+
+  const saveGallery = async (nextGallery) => {
+    if (!isAdmin) return;
+    setGalleryUploadError("");
+    setIsSavingGallery(true);
+    try {
+      await updateDoc(doc(db, collectionName, id), {
+        gallery: nextGallery,
+        updatedAt: serverTimestamp(),
+      });
+      setItem((prev) => ({ ...(prev || {}), gallery: nextGallery }));
+    } catch (err) {
+      console.error("Gallery update failed:", err);
+      setGalleryUploadError("Update failed. Please try again.");
+    } finally {
+      setIsSavingGallery(false);
+    }
+  };
+
+  const onEditGalleryLink = async (src) => {
+    if (!isAdmin) return;
+    const current = galleryItems.find((g) => g.src === src);
+    const nextHref = window.prompt("Project link (optional). Use /projects/<id> or https://…", current?.href || "") ?? null;
+    if (nextHref === null) return;
+    const cleaned = nextHref.trim();
+    const nextGallery = galleryItems.map((g) => (g.src === src ? { ...g, href: cleaned } : g));
+    await saveGallery(nextGallery);
+  };
+
+  const onRemoveGalleryItem = async (src) => {
+    if (!isAdmin) return;
+    setRemovePhotoConfirm({ open: true, src });
+  };
+
+  const performRemoveGalleryItem = async (src) => {
+    const nextGallery = galleryItems.filter((g) => g.src !== src);
+    await saveGallery(nextGallery);
+  };
+
+  const openGalleryLink = (href) => {
+    if (!href) return;
+    if (/^https?:\/\//i.test(href)) window.open(href, "_blank", "noreferrer");
+    else navigate(href);
   };
 
   if (loading) return <DetailSkeleton />;
@@ -307,14 +416,14 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
       </section>
 
       {/* GALLERY */}
-      {galleryImages.length || isAdmin ? (
+      {galleryItems.length || isAdmin ? (
         <section className="max-w-6xl mx-auto px-6 mt-10 md:mt-14 pb-16">
           <div className="ui-surface border ui-border p-6 md:p-10">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl md:text-2xl font-black">Gallery</h2>
               </div>
-              <p className="text-xs font-black uppercase tracking-widest ui-muted opacity-80">{galleryImages.length} photos</p>
+              <p className="text-xs font-black uppercase tracking-widest ui-muted opacity-80">{galleryItems.length} photos</p>
             </div>
 
             <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
@@ -331,7 +440,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                   <button
                     type="button"
                     onClick={onPickGalleryFiles}
-                    disabled={isUploadingGallery}
+                    disabled={isUploadingGallery || isSavingGallery}
                     className="group relative aspect-square overflow-hidden border ui-border ui-soft grid place-items-center focus:outline-none focus:ring-2 focus:ring-text disabled:opacity-70"
                     aria-label="Upload gallery images"
                     title="Upload gallery images"
@@ -340,36 +449,89 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                       <div className="w-12 h-12 ui-badge grid place-items-center mb-3">
                         <IoAddOutline size={22} />
                       </div>
-                      <div className="text-xs font-black uppercase tracking-widest">{isUploadingGallery ? "Uploading…" : "Add photos"}</div>
+                      <div className="text-xs font-black uppercase tracking-widest">
+                        {isUploadingGallery ? "Uploading…" : isSavingGallery ? "Saving…" : "Add photos"}
+                      </div>
                       <div className="mt-1 text-[11px] ui-muted opacity-80">PNG/JPG/WebP</div>
                     </div>
                     <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/10 transition" />
                   </button>
                 </>
               ) : null}
-              {galleryImages.map((src, idx) => (
-                <button
-                  key={src}
-                  onClick={() => openLightbox(idx)}
-                  className="group relative aspect-square overflow-hidden border ui-border focus:outline-none focus:ring-2 focus:ring-text"
-                  aria-label={`Open image ${idx + 1}`}
-                >
-                  <img
-                    src={src}
-                    alt={`${title} ${idx + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/25 transition" />
-                  <div className="absolute bottom-2 right-2 w-9 h-9 ui-badge grid place-items-center opacity-0 group-hover:opacity-100 transition">
-                    <IoOpenOutline />
-                  </div>
-                </button>
+              {galleryItems.map((g, idx) => (
+                <div key={g.src} className="group relative aspect-square overflow-hidden border ui-border">
+                  <button
+                    onClick={() => openLightbox(idx)}
+                    className="absolute inset-0 w-full h-full focus:outline-none focus:ring-2 focus:ring-text"
+                    aria-label={`Open image ${idx + 1}`}
+                    type="button"
+                  >
+                    <img
+                      src={g.src}
+                      alt={`${title} ${idx + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/25 transition" />
+                    <div className="absolute bottom-2 right-2 w-9 h-9 ui-badge grid place-items-center opacity-0 group-hover:opacity-100 transition">
+                      <IoOpenOutline />
+                    </div>
+                  </button>
+
+                  {g.href ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openGalleryLink(g.href);
+                      }}
+                      className="absolute top-2 left-2 w-9 h-9 ui-badge grid place-items-center opacity-0 group-hover:opacity-100 transition"
+                      aria-label="Open project link"
+                      title="Open project link"
+                    >
+                      <IoLinkOutline />
+                    </button>
+                  ) : null}
+
+                  {isAdmin ? (
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onEditGalleryLink(g.src);
+                        }}
+                        disabled={isSavingGallery}
+                        className="w-9 h-9 ui-badge grid place-items-center disabled:opacity-60"
+                        aria-label="Edit project link"
+                        title="Edit project link"
+                      >
+                        <IoPencilOutline />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onRemoveGalleryItem(g.src);
+                        }}
+                        disabled={isSavingGallery}
+                        className="w-9 h-9 ui-badge grid place-items-center disabled:opacity-60"
+                        aria-label="Remove photo"
+                        title="Remove photo"
+                      >
+                        <IoTrashOutline />
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               ))}
             </div>
 
             {galleryUploadError ? <p className="mt-4 text-sm text-red-500 font-black">{galleryUploadError}</p> : null}
-            {!galleryImages.length && !isUploadingGallery ? (
+            {!galleryItems.length && !isUploadingGallery ? (
               <p className="mt-4 text-sm ui-muted">No photos yet.</p>
             ) : null}
           </div>
@@ -379,6 +541,21 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
       )}
 
       <Footer />
+
+      <ConfirmModal
+        isOpen={removePhotoConfirm.open}
+        title="Remove photo?"
+        message="This removes the photo from the gallery (it won't delete the file from storage)."
+        danger
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        onCancel={() => setRemovePhotoConfirm({ open: false, src: "" })}
+        onConfirm={async () => {
+          const src = removePhotoConfirm.src;
+          setRemovePhotoConfirm({ open: false, src: "" });
+          await performRemoveGalleryItem(src);
+        }}
+      />
 
       <EditModal
         isOpen={isModalOpen}
@@ -390,7 +567,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 
       <Lightbox
         isOpen={selectedImageIndex !== null}
-        images={galleryImages}
+        images={galleryItems}
         startIndex={selectedImageIndex ?? 0}
         onClose={closeLightbox}
       />

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firebase";
 import { updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { IoCloseOutline } from "react-icons/io5";
+import AlertModal from "./AlertModal";
+import ConfirmModal from "./ConfirmModal";
 
 const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) => {
   // 1. Setup States matching your Admin Panel
@@ -25,35 +27,81 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
   const [endYear, setEndYear] = useState("Present");
 
   const [loading, setLoading] = useState(false);
+  const [alertState, setAlertState] = useState({ open: false, title: "", message: "" });
+  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
+  const [initialSnapshot, setInitialSnapshot] = useState(null);
 
   // 2. Pre-fill data when modal opens
   useEffect(() => {
     if (data) {
-      setFormData({
+      const nextForm = {
         title: data.title || "",
         subtitle: data.subtitle || "",
         description: data.description || "",
         image: data.image || ""
-      });
-      setTechStack(data.techStack || []);
+      };
+      setFormData(nextForm);
+      const nextTechStack = data.techStack || [];
+      setTechStack(nextTechStack);
       
       // Parse the duration string back into dropdowns (Simple split logic)
       if (data.duration) {
         const parts = data.duration.split(" - ");
         const startParts = parts[0].split(" ");
-        setStartMonth(startParts[0]);
-        setStartYear(startParts[1]);
+        const nextStartMonth = startParts[0];
+        const nextStartYear = startParts[1];
+        setStartMonth(nextStartMonth);
+        setStartYear(nextStartYear);
         
+        let nextEndMonth = "Jan";
+        let nextEndYear = "Present";
         if (parts[1] === "Present") {
-          setEndYear("Present");
+          setEndMonth(nextEndMonth);
+          setEndYear(nextEndYear);
         } else {
           const endParts = parts[1].split(" ");
-          setEndMonth(endParts[0]);
-          setEndYear(endParts[1]);
+          nextEndMonth = endParts[0];
+          nextEndYear = endParts[1];
+          setEndMonth(nextEndMonth);
+          setEndYear(nextEndYear);
         }
+
+        setInitialSnapshot({
+          formData: nextForm,
+          techStack: nextTechStack,
+          startMonth: nextStartMonth,
+          startYear: nextStartYear,
+          endMonth: nextEndMonth,
+          endYear: nextEndYear,
+        });
+      } else {
+        const nextStartMonth = "Jan";
+        const nextStartYear = currentYear.toString();
+        const nextEndMonth = "Jan";
+        const nextEndYear = "Present";
+        setStartMonth(nextStartMonth);
+        setStartYear(nextStartYear);
+        setEndMonth(nextEndMonth);
+        setEndYear(nextEndYear);
+        setInitialSnapshot({
+          formData: nextForm,
+          techStack: nextTechStack,
+          startMonth: nextStartMonth,
+          startYear: nextStartYear,
+          endMonth: nextEndMonth,
+          endYear: nextEndYear,
+        });
       }
     }
-  }, [data]);
+  }, [data, currentYear]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setDiscardConfirmOpen(false);
+      setAlertState({ open: false, title: "", message: "" });
+      setLoading(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen || !data) return null;
 
@@ -101,7 +149,7 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
       onClose();
     } catch (error) {
       console.error(error);
-      alert("Update failed!");
+      setAlertState({ open: true, title: "Update failed", message: error?.message || "Update failed!" });
     } finally {
       setLoading(false);
     }
@@ -109,12 +157,53 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
 
   const inputClass = "w-full p-3 ui-soft border-2 ui-border focus:border-text outline-none transition text-sm";
 
+  const currentSnapshot = {
+    formData,
+    techStack,
+    startMonth,
+    startYear,
+    endMonth,
+    endYear,
+  };
+
+  const isDirty = initialSnapshot ? JSON.stringify(currentSnapshot) !== JSON.stringify(initialSnapshot) : false;
+
+  const requestClose = () => {
+    if (loading) return;
+    if (!isDirty) onClose?.();
+    else setDiscardConfirmOpen(true);
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/70 backdrop-blur-md">
+      <AlertModal
+        isOpen={alertState.open}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={() => setAlertState({ open: false, title: "", message: "" })}
+      />
+      <ConfirmModal
+        isOpen={discardConfirmOpen}
+        title="Done editing?"
+        message="You have unsaved changes. Discard them?"
+        danger
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        onCancel={() => setDiscardConfirmOpen(false)}
+        onConfirm={() => {
+          setDiscardConfirmOpen(false);
+          onClose?.();
+        }}
+      />
       <div className="ui-surface text-text w-full max-w-4xl shadow-2xl overflow-y-auto max-h-[90vh] border ui-border">
         <div className="bg-ink p-6 text-paper flex justify-between items-center sticky top-0 z-10 border-b border-paper/10">
           <h2 className="text-xl font-bold uppercase tracking-widest">Edit {collectionName}</h2>
-          <button onClick={onClose} className="hover:text-red-400 transition cursor-pointer">
+          <button
+            type="button"
+            onClick={requestClose}
+            disabled={loading}
+            className="hover:text-red-400 transition cursor-pointer disabled:opacity-60"
+          >
             <IoCloseOutline size={32} />
           </button>
         </div>

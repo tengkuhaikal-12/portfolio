@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { browserLocalPersistence, getAuth, setPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -15,7 +15,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 console.log("🔥 Firebase initialized");
+console.log("🪣 Storage bucket:", firebaseConfig.storageBucket);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.warn("Auth persistence not available:", err?.code || err?.message || err);
+});

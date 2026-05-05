@@ -15,6 +15,7 @@ import {
 } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import EditModal from "../component/EditModal";
+import ConfirmModal from "../component/ConfirmModal";
 
 const Portfolio = () => {
   const [projects, setProjects] = useState([]);
@@ -26,6 +27,7 @@ const Portfolio = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedCollection, setSelectedCollection] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, collectionName: "", id: "" });
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "", website: "" });
   const [contactStatus, setContactStatus] = useState({ state: "idle", message: "" });
 
@@ -58,16 +60,18 @@ const Portfolio = () => {
     fetchData();
   }, []);
 
-  const handleDelete = async (collectionName, id) => {
-    if (window.confirm("Are you sure you want to delete this entry?")) {
-      try {
-        await deleteDoc(doc(db, collectionName, id));
-        if (collectionName === "projects") setProjects(prev => prev.filter(item => item.id !== id));
-        if (collectionName === "experience") setExperience(prev => prev.filter(item => item.id !== id));
-        if (collectionName === "education") setEducation(prev => prev.filter(item => item.id !== id));
-      } catch (err) {
-        console.error("Error deleting document:", err);
-      }
+  const handleDelete = (collectionName, id) => {
+    setDeleteConfirm({ open: true, collectionName, id });
+  };
+
+  const performDelete = async (collectionName, id) => {
+    try {
+      await deleteDoc(doc(db, collectionName, id));
+      if (collectionName === "projects") setProjects((prev) => prev.filter((item) => item.id !== id));
+      if (collectionName === "experience") setExperience((prev) => prev.filter((item) => item.id !== id));
+      if (collectionName === "education") setEducation((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error("Error deleting document:", err);
     }
   };
 
@@ -125,6 +129,20 @@ const Portfolio = () => {
   return (
     <div className="min-h-screen bg-bg text-text font-body">
       <Navbar />
+      <ConfirmModal
+        isOpen={deleteConfirm.open}
+        title="Delete entry?"
+        message="This action cannot be undone."
+        danger
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onCancel={() => setDeleteConfirm({ open: false, collectionName: "", id: "" })}
+        onConfirm={async () => {
+          const { collectionName, id } = deleteConfirm;
+          setDeleteConfirm({ open: false, collectionName: "", id: "" });
+          await performDelete(collectionName, id);
+        }}
+      />
 
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-28">
         <img
@@ -212,23 +230,18 @@ const Portfolio = () => {
               </p>
 
               <div className="flex flex-col gap-3">
-                <ContactRow
-                  icon={<IoMailOutline size={18} />}
-                  label="Email"
-                  value="your@email.com"
-                  href="mailto:your@email.com"
-                />
+              
                 <ContactRow
                   icon={<IoLogoLinkedin size={18} />}
                   label="LinkedIn"
                   value="linkedin.com"
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/tengku-haikal-tengku-abdullah-651769291/"
                 />
                 <ContactRow
                   icon={<IoLogoGithub size={18} />}
                   label="GitHub"
                   value="github.com"
-                  href="https://github.com"
+                  href="https://github.com/tengkuhaikal"
                 />
                 <ContactRow
                   icon={<IoLocationOutline size={18} />}

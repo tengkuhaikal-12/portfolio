@@ -1,0 +1,12 @@
+[
+  {
+    "origin": [
+      "http://localhost:8888",
+      "http://localhost:5173",
+      "https://tmhta.netlify.app"
+    ],
+    "method": ["GET", "POST", "PUT", "HEAD", "OPTIONS"],
+    "responseHeader": ["Content-Type", "Authorization", "x-goog-*"],
+    "maxAgeSeconds": 3600
+  }
+]

@@ -2,3 +2,9 @@
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Needed for OAuth popups (Google sign-in) to be able to call window.close/window.closed.
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"

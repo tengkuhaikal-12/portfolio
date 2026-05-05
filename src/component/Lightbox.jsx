@@ -2,7 +2,21 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IoChevronBackOutline, IoChevronForwardOutline, IoCloseOutline } from "react-icons/io5";
 
 const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
-  const list = useMemo(() => (Array.isArray(images) ? images.filter(Boolean) : []), [images]);
+  const list = useMemo(() => {
+    const raw = Array.isArray(images) ? images.filter(Boolean) : [];
+    return raw
+      .map((img) => {
+        if (!img) return null;
+        if (typeof img === "string") return { src: img };
+        if (typeof img === "object") {
+          const src = img.src || img.url || img.image || "";
+          if (!src) return null;
+          return { src, href: img.href || img.link || img.projectUrl || "" };
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }, [images]);
   const [index, setIndex] = useState(startIndex);
   const touchStartX = useRef(null);
 
@@ -45,8 +59,8 @@ const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
   };
 
   if (!isOpen) return null;
-  const src = list[index];
-  if (!src) return null;
+  const current = list[index];
+  if (!current?.src) return null;
 
   return (
     <div
@@ -71,7 +85,7 @@ const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          <img src={src} alt={`Image ${index + 1}`} className="w-full max-h-[78vh] object-contain bg-ink" />
+          <img src={current.src} alt={`Image ${index + 1}`} className="w-full max-h-[78vh] object-contain bg-ink" />
 
           {list.length > 1 ? (
             <>

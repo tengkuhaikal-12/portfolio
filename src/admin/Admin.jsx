@@ -6,6 +6,7 @@ import { useAuth } from "../auth/useAuth";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { IoPowerOutline } from "react-icons/io5";
+import AlertModal from "../component/AlertModal";
 
 const Admin = () => {
     const [activeTab, setActiveTab] = useState("projects");
@@ -18,8 +19,9 @@ const Admin = () => {
         image: ""
     });
 
-    useAuth();
+    const { user, isAdmin, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+    const [alertState, setAlertState] = useState({ open: false, title: "", message: "" });
 
     const [techInput, setTechInput] = useState("");
     const [techStack, setTechStack] = useState([]);
@@ -60,6 +62,14 @@ const Admin = () => {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        if (authLoading) {
+            setAlertState({ open: true, title: "Please wait", message: "Checking authentication… try again in a moment." });
+            return;
+        }
+        if (!isAdmin) {
+            setAlertState({ open: true, title: "Unauthorized", message: "Access denied: you are not an admin." });
+            return;
+        }
         setLoading(true);
         try {
             // Logic to calculate sortable value: (Year * 12) + MonthIndex
@@ -78,13 +88,22 @@ const Admin = () => {
                 createdAt: serverTimestamp()
             });
 
-            alert(`Successfully added to ${activeTab}!`);
+            setAlertState({ open: true, title: "Saved", message: `Successfully added to ${activeTab}!` });
             setFormData({ title: "", subtitle: "", description: "", image: "" });
             setTechStack([]);
             setTechInput("");
         } catch (err) {
             console.error(err);
-            alert("Error saving data");
+            if (err?.code === "permission-denied") {
+                const who = user?.email || auth?.currentUser?.email || auth?.currentUser?.uid || "unknown user";
+                setAlertState({
+                    open: true,
+                    title: "Permission denied",
+                    message: `Firestore rules denied this write for ${who}.\n\nUpdate Firestore Rules to allow this admin to write.`,
+                });
+            } else {
+                setAlertState({ open: true, title: "Save failed", message: err?.message || "Error saving data" });
+            }
         } finally {
             setLoading(false);
         }
@@ -105,6 +124,12 @@ const Admin = () => {
 
     return (
         <div className="min-h-screen bg-bg text-text p-4 md:p-10 flex justify-center items-center">
+            <AlertModal
+                isOpen={alertState.open}
+                title={alertState.title}
+                message={alertState.message}
+                onClose={() => setAlertState({ open: false, title: "", message: "" })}
+            />
             <div className="max-w-4xl w-full ui-surface border ui-border shadow-2xl overflow-hidden">
                 <div className="bg-ink p-6 text-paper flex justify-between items-center">
                     <h1 className="text-2xl font-bold tracking-widest uppercase">Portfolio Manager</h1>
