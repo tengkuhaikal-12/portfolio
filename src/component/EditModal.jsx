@@ -107,12 +107,12 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
     }
   };
 
-  const inputClass = "w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-black outline-none transition text-sm";
+  const inputClass = "w-full p-3 ui-soft border-2 ui-border focus:border-text outline-none transition text-sm";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-      <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-y-auto max-h-[90vh]">
-        <div className="bg-black p-6 text-white flex justify-between items-center sticky top-0 z-10">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/70 backdrop-blur-md">
+      <div className="ui-surface text-text w-full max-w-4xl shadow-2xl overflow-y-auto max-h-[90vh] border ui-border">
+        <div className="bg-ink p-6 text-paper flex justify-between items-center sticky top-0 z-10 border-b border-paper/10">
           <h2 className="text-xl font-bold uppercase tracking-widest">Edit {collectionName}</h2>
           <button onClick={onClose} className="hover:text-red-400 transition cursor-pointer">
             <IoCloseOutline size={32} />
@@ -122,17 +122,17 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
         <form onSubmit={handleSubmit} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-black uppercase text-gray-400 mb-1 block">Title</label>
+              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Title</label>
               <input required className={inputClass} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
             </div>
 
             <div>
-              <label className="text-xs font-black uppercase text-gray-400 mb-1 block">Subtitle / Role</label>
+              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Subtitle / Role</label>
               <input required className={inputClass} value={formData.subtitle} onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })} />
             </div>
 
             <div className="space-y-4">
-              <label className="text-xs font-black uppercase text-gray-400 block">Duration</label>
+              <label className="text-xs font-black uppercase ui-muted opacity-80 block">Duration</label>
               <div className="grid grid-cols-2 gap-2">
                 <select className={inputClass} value={startMonth} onChange={(e) => setStartMonth(e.target.value)}>
                   {months.map(m => <option key={m} value={m}>{m}</option>)}
@@ -156,11 +156,11 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
           <div className="space-y-4">
             {collectionName === "projects" && (
               <div>
-                <label className="text-xs font-black uppercase text-gray-400 mb-1 block">Tech Stack (Enter to add)</label>
+                <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Tech Stack (Enter to add)</label>
                 <input className={inputClass} value={techInput} onKeyDown={handleAddTech} onChange={(e) => setTechInput(e.target.value)} />
                 <div className="flex flex-wrap gap-2 mt-2">
                   {techStack.map((tech, i) => (
-                    <span key={i} className="bg-purple-100 text-purple-700 px-2 py-1 rounded-md text-[10px] font-bold border border-purple-200">
+                    <span key={i} className="ui-pill border px-2 py-1 text-[10px] font-bold">
                       {tech} <button type="button" onClick={() => removeTech(i)} className="ml-1 text-red-500">×</button>
                     </span>
                   ))}
@@ -169,18 +169,18 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
             )}
 
             <div>
-              <label className="text-xs font-black uppercase text-gray-400 mb-1 block">Description</label>
+              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Description</label>
               <textarea rows="4" className={inputClass} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
             </div>
 
             <div>
-              <label className="text-xs font-black uppercase text-gray-400 mb-1 block">Update Image</label>
+              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Update Image</label>
               <input type="file" onChange={handleImage} className="text-xs cursor-pointer block w-full" />
-              {formData.image && <img src={formData.image} className="mt-2 h-16 rounded border" alt="preview" />}
+              {formData.image && <img src={formData.image} className="mt-2 h-16 border ui-border" alt="preview" />}
             </div>
           </div>
 
-          <button disabled={loading} type="submit" className="md:col-span-2 w-full bg-black text-white py-4 rounded-full font-black uppercase tracking-widest hover:bg-gray-800 transition disabled:bg-gray-400 shadow-xl">
+          <button disabled={loading} type="submit" className="md:col-span-2 w-full bg-text text-bg py-4 font-black uppercase tracking-widest hover:opacity-90 transition disabled:opacity-60 shadow-xl">
             {loading ? "Saving Changes..." : "Update Portfolio"}
           </button>
         </form>

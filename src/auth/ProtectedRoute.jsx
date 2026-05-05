@@ -3,7 +3,7 @@ import { useAuth } from "./useAuth";
 import { useEffect, useState } from "react";
 
 const ProtectedAdmin = ({ children }) => {
-    const { user, isAdmin } = useAuth();
+    const { isAdmin } = useAuth();
     const navigate = useNavigate();
     const [time, setTime] = useState(5);
 
@@ -26,12 +26,12 @@ const ProtectedAdmin = ({ children }) => {
 
     if (!isAdmin) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center text-white bg-black">
+            <div className="h-screen flex flex-col items-center justify-center text-paper bg-ink">
                 <h1 className="text-2xl mb-2">🚫 Access Denied (Admin only)</h1>
 
-                <p className="text-gray-400">
+                <p className="text-paper/70">
                     Redirecting to home in{" "}
-                    <span className="text-white font-bold">{time}</span> s...
+                    <span className="text-paper font-bold">{time}</span> s...
                 </p>
             </div>
         );
