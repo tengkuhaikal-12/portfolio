@@ -2,8 +2,12 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 
-// Use an array to store multiple authorized emails
-const ADMIN_EMAILS = ["haikaltengku836@gmail.com", "diaryoftmhta@gmail.com"];
+// Comma-separated list in `.env` / Netlify env, e.g.:
+// VITE_ADMIN_EMAILS=me@example.com,other@example.com
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
 
 export const useAuth = () => {
     // null = not logged in, undefined = still checking, object = logged in
@@ -15,7 +19,7 @@ export const useAuth = () => {
             setUser(u);
 
             // Use .includes() to check if the current email is in your admin list
-            if (u && u.email && ADMIN_EMAILS.includes(u.email)) {
+            if (u && u.email && ADMIN_EMAILS.includes(u.email.toLowerCase())) {
                 setIsAdmin(true);
             } else {
                 setIsAdmin(false);

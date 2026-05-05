@@ -52,12 +52,12 @@ const parseBody = (event) => {
 };
 
 const makeTransporter = () => {
-  const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT || "465");
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || "");
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
-  if (!user || !pass) return null;
+  if (!host || !port || !user || !pass) return null;
 
   return nodemailer.createTransport({
     host,
@@ -124,4 +124,3 @@ export const handler = async (event) => {
     return json(500, { error: "Failed to send email" }, cors);
   }
 };
-

@@ -11,7 +11,6 @@ Flow: React (Vite) → Netlify Function → Nodemailer → Gmail inbox.
 
 - Function: `netlify/functions/contact.js`
 - Frontend endpoint default: `/.netlify/functions/contact`
-- Optional alias: `/api/contact` via `netlify.toml`
 
 ### Environment variables
 
@@ -25,4 +24,3 @@ Set in Netlify (Site settings → Environment variables):
 - `ALLOWED_ORIGINS` (optional; comma-separated allowlist)
 
 For local dev, copy `.env.example` → `.env`. `netlify dev` will load it.
-

@@ -84,8 +84,7 @@ const Portfolio = () => {
   const handleContactSubmit = async (e) => {
     e.preventDefault();
 
-    const endpoint =
-      import.meta.env.VITE_CONTACT_ENDPOINT || "/.netlify/functions/contact";
+    const endpoint = "/.netlify/functions/" + "contact";
 
     setContactStatus({ state: "loading", message: "" });
     try {
