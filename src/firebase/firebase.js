@@ -15,7 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 console.log("🔥 Firebase initialized");
-console.log("🪣 Storage bucket:", firebaseConfig.storageBucket);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
