@@ -263,6 +263,11 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
             </div>
 
             <div>
+              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Link</label>
+              <input required className={inputClass} value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+            </div>
+
+            <div>
               <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Update Image</label>
               <input type="file" onChange={handleImage} className="text-xs cursor-pointer block w-full" />
               {formData.image && <img src={formData.image} className="mt-2 h-16 border ui-border" alt="preview" />}

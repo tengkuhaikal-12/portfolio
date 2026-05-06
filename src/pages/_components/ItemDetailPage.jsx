@@ -287,6 +287,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
   const duration = item?.duration || item?.date || "";
   const location = item?.location || "";
   const tags = collectionName === "projects" ? item?.techStack || item?.tags || [] : item?.tags || [];
+  const link = item?.link
 
   return (
     <div className="min-h-screen bg-bg text-text font-body">
@@ -363,43 +364,36 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 
           <div className="md:col-span-4 space-y-4">
             <div className="ui-surface border ui-border p-6">
-              <p className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">Actions</p>
-              <div className="mt-4 grid grid-cols-1 gap-2">
-                {actions.length ? (
-                  actions.map((a) => (
-                    <ActionButton key={a.href} href={a.href} kind={a.kind} label={a.label} />
-                  ))
-                ) : (
-                  <div className="text-sm ui-muted">No links available.</div>
-                )}
+              <p className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">
+                Actions
+              </p>
+
+              <div className="mt-4 flex flex-col h-[calc(100%-24px)]">
+                <div className="flex-1 space-y-2">
+                  {link?.length ? (
+                    <a
+                      href={`https://${link}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 w-full px-4 py-3 border ui-border ui-action font-black text-sm break-all hover:opacity-90 transition"
+                    >
+                      <IoOpenOutline className="shrink-0" />
+                      <span>{link}</span>
+                    </a>
+                  ) : (
+                    <div className="text-sm ui-muted">No links available.</div>
+                  )}
+                </div>
+
                 {isAdmin ? (
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-2 inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-text text-bg font-black tracking-widest hover:opacity-90 transition"
+                    className="mt-4 inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-text text-bg font-black tracking-widest hover:opacity-90 transition"
                   >
                     <IoPencilOutline /> Edit
                   </button>
                 ) : null}
               </div>
-            </div>
-
-            <div className="ui-surface border ui-border p-6">
-              <p className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">Quick notes</p>
-              <ul className="mt-4 space-y-2 text-sm ui-muted">
-                {collectionName === "projects" ? (
-                  <>
-                    <li>Built with clean UI + scalable structure.</li>
-                    <li>Gallery supports lightbox navigation.</li>
-                    <li>Dark mode supported on this page.</li>
-                  </>
-                ) : (
-                  <>
-                    <li>Highlights + outcomes shown below.</li>
-                    <li>Gallery supports lightbox navigation.</li>
-                    <li>Dark mode supported on this page.</li>
-                  </>
-                )}
-              </ul>
             </div>
           </div>
         </div>
@@ -578,9 +572,19 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 const MetaRow = ({ icon, label, value }) => (
   <div className="flex items-start gap-3">
     <div className="mt-[2px] ui-muted opacity-80">{icon}</div>
+
     <div>
-      <div className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">{label}</div>
-      <div className="mt-1 text-sm font-black">{value}</div>
+      <div className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">
+        {label}
+      </div>
+
+      <div className="mt-1 text-sm font-black">
+        {value} {" "}{value?.toLowerCase().includes("present") && (
+          <p className="mt-1 text-xs text-orange-400/80">
+            In progress
+          </p>
+        )}
+      </div>
     </div>
   </div>
 );

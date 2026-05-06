@@ -166,7 +166,7 @@ const Portfolio = () => {
               <ExperienceCard
                 key={exp.id}
                 id={exp.id}
-                year={exp.duration}
+                duration={exp.duration}
                 title={exp.title}
                 org={exp.subtitle}
                 image={exp.image}
@@ -195,6 +195,7 @@ const Portfolio = () => {
                 onEdit={() => handleEdit("projects", proj)}
                 onDelete={() => handleDelete("projects", proj.id)}
                 role={proj.subtitle}
+                duration={proj.duration}
               />
             ))}
           </div>
@@ -357,7 +358,7 @@ const ControlButtons = ({ onEdit, onDelete }) => (
   </div>
 );
 
-const ExperienceCard = ({ id, year, title, org, image, desc, isAdmin, onEdit, onDelete }) => (
+const ExperienceCard = ({ id, duration, title, org, image, desc, isAdmin, onEdit, onDelete }) => (
   <Link
     to={`/experience/${id}`}
     className="group flex flex-col md:flex-row ui-surface shadow-md hover:shadow-lg transition overflow-hidden border ui-border border-l-4 border-l-text"
@@ -370,7 +371,15 @@ const ExperienceCard = ({ id, year, title, org, image, desc, isAdmin, onEdit, on
     ) : null}
     <div className="flex-1 p-6 flex flex-col sm:flex-row justify-between items-start gap-4 min-w-0">
       <div className="flex-grow min-w-0 flex flex-col max-h-48 overflow-hidden">
-        <span className="text-xs font-black uppercase tracking-widest ui-muted opacity-80">{year}</span>
+        <span className="text-xs font-black uppercase tracking-widest ui-muted opacity-80">
+          {duration}
+
+          {duration?.toLowerCase().includes("present") && (
+            <span className="ml-1 text-orange-400/80">
+              (ongoing)
+            </span>
+          )}
+        </span>
         <h3 className="text-lg font-black text-text mt-1 capitalize break-words line-clamp-1 group-hover:underline">{title}</h3>
         <p className="text-sm font-black ui-muted mb-3 break-words line-clamp-1">{org}</p>
         <p className="text-sm ui-muted leading-relaxed break-words line-clamp-3">{desc}</p>
@@ -384,7 +393,7 @@ const ExperienceCard = ({ id, year, title, org, image, desc, isAdmin, onEdit, on
   </Link>
 );
 
-const ProjectCard = ({ id, title, tags, desc, image, isAdmin, onEdit, onDelete, role }) => (
+const ProjectCard = ({ id, title, tags, desc, image, isAdmin, onEdit, onDelete, role, duration }) => (
   <Link
     to={`/projects/${id}`}
     className="group flex flex-col md:flex-row ui-surface shadow-md hover:shadow-lg transition overflow-hidden border ui-border border-l-4 border-l-text"
@@ -397,6 +406,15 @@ const ProjectCard = ({ id, title, tags, desc, image, isAdmin, onEdit, onDelete, 
     ) : null}
     <div className="flex-1 p-6 flex flex-col sm:flex-row justify-between items-start gap-4 min-w-0">
       <div className="flex-grow min-w-0 flex flex-col max-h-48 overflow-hidden">
+        <span className="text-xs font-black uppercase tracking-widest ui-muted opacity-80">
+          {duration}
+
+          {duration?.toLowerCase().includes("present") && (
+            <span className="ml-1 text-orange-400/80">
+              (ongoing)
+            </span>
+          )}
+        </span>
         <h3 className="text-lg font-black text-text mb-2 break-words line-clamp-1 group-hover:underline">{title}</h3>
         <p className="text-sm font-black ui-muted mb-3 break-words line-clamp-1">{role}</p>
         <div className="flex flex-nowrap gap-2 mb-4 overflow-hidden">
