@@ -444,7 +444,6 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                             </div>
                           </div>
 
-                          <IoOpenOutline className="shrink-0 opacity-70" />
                         </a>
                       );
                     })
