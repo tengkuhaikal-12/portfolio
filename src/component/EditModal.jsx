@@ -264,7 +264,7 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
 
             <div>
               <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Link</label>
-              <input required className={inputClass} value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+              <input className={inputClass} value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
             </div>
 
             <div>
