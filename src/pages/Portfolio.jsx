@@ -153,7 +153,7 @@ const Portfolio = () => {
         <h1 className="text-4xl md:text-6xl font-bold mb-4">Tengku Haikal</h1>
         <p className="ui-muted mb-6 font-black tracking-widest">Universiti Malaya <br /> Bachelor of Computer Science (Software Engineering)</p>
         <p className="max-w-xl ui-muted">
-          Building clean, high-performance applications with focus on modern UI and scalable architecture.
+          A curious developer who enjoys transforming ideas into real applications that people can use and benefit from.
         </p>
       </section>
 
