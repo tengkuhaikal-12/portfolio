@@ -110,18 +110,58 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 
   const actions = useMemo(() => {
     const links = [];
-    if (item?.url) links.push({ kind: "visit", label: "Visit", href: item.url });
-    if (item?.liveUrl) links.push({ kind: "visit", label: "Visit", href: item.liveUrl });
-    if (item?.github) links.push({ kind: "github", label: "GitHub", href: item.github });
-    if (item?.repoUrl) links.push({ kind: "github", label: "GitHub", href: item.repoUrl });
+
+    if (item?.link)
+      links.push({
+        kind: "visit",
+        label: "Website",
+        href: item.link,
+      });
+
+    if (item?.url)
+      links.push({
+        kind: "visit",
+        label: "Visit",
+        href: item.url,
+      });
+
+    if (item?.liveUrl)
+      links.push({
+        kind: "visit",
+        label: "Live Demo",
+        href: item.liveUrl,
+      });
+
+    if (item?.github)
+      links.push({
+        kind: "github",
+        label: "GitHub",
+        href: item.github,
+      });
+
+    if (item?.repoUrl)
+      links.push({
+        kind: "github",
+        label: "Repository",
+        href: item.repoUrl,
+      });
+
     if (Array.isArray(item?.links)) {
       item.links.forEach((l) => {
         if (!l?.href) return;
-        links.push({ kind: l.kind || "visit", label: l.label || "Open", href: l.href });
+
+        links.push({
+          kind: l.kind || "visit",
+          label: l.label || "Open",
+          href: l.href,
+        });
       });
     }
+
     const dedup = new Map();
+
     links.forEach((l) => dedup.set(l.href, l));
+
     return Array.from(dedup.values()).slice(0, 4);
   }, [item]);
 
@@ -363,36 +403,66 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
           </div>
 
           <div className="md:col-span-4 space-y-4">
-            <div className="ui-surface border ui-border p-6">
-              <p className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">
-                Actions
-              </p>
+            <div className="md:col-span-4 space-y-4">
+              <div className="ui-surface border ui-border p-6 h-full">
+                <p className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">
+                  Actions
+                </p>
 
-              <div className="mt-4 flex flex-col h-[calc(100%-24px)]">
-                <div className="flex-1 space-y-2">
-                  {link?.length ? (
-                    <a
-                      href={`https://${link}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 w-full px-4 py-3 border ui-border ui-action font-black text-sm break-all hover:opacity-90 transition"
-                    >
-                      <IoOpenOutline className="shrink-0" />
-                      <span>{link}</span>
-                    </a>
+                <div className="mt-4 flex flex-col gap-2">
+                  {actions.length ? (
+                    actions.map((action) => {
+                      const isGithub = action.kind === "github";
+
+                      return (
+                        <a
+                          key={action.href}
+                          href={
+                            action.href.startsWith("http")
+                              ? action.href
+                              : `https://${action.href}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between gap-3 w-full px-4 py-3 border ui-border ui-action font-black text-sm hover:opacity-90 transition"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {isGithub ? (
+                              <FaGithub className="shrink-0 text-lg" />
+                            ) : (
+                              <IoOpenOutline className="shrink-0 text-lg" />
+                            )}
+
+                            <div className="min-w-0">
+                              <p className="truncate">
+                                {action.label}
+                              </p>
+
+                              <p className="text-[10px] ui-muted font-normal truncate">
+                                {action.href}
+                              </p>
+                            </div>
+                          </div>
+
+                          <IoOpenOutline className="shrink-0 opacity-70" />
+                        </a>
+                      );
+                    })
                   ) : (
-                    <div className="text-sm ui-muted">No links available.</div>
+                    <div className="text-sm ui-muted">
+                      No links available.
+                    </div>
                   )}
-                </div>
 
-                {isAdmin ? (
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="mt-4 inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-text text-bg font-black tracking-widest hover:opacity-90 transition"
-                  >
-                    <IoPencilOutline /> Edit
-                  </button>
-                ) : null}
+                  {isAdmin ? (
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="mt-2 inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-text text-bg font-black tracking-widest hover:opacity-90 transition"
+                    >
+                      <IoPencilOutline /> Edit
+                    </button>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>

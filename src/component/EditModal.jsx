@@ -263,8 +263,106 @@ const EditModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) =
             </div>
 
             <div>
-              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Link</label>
-              <input className={inputClass} value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-2 block">
+                Links
+              </label>
+
+              <div className="space-y-3">
+                {(formData.links || []).map((link, index) => (
+                  <div
+                    key={index}
+                    className="border ui-border p-3 rounded-xl space-y-2"
+                  >
+                    <input
+                      className={inputClass}
+                      placeholder="Label (GitHub, Website, Demo...)"
+                      value={link.label || ""}
+                      onChange={(e) => {
+                        const updated = [...formData.links];
+                        updated[index].label = e.target.value;
+
+                        setFormData({
+                          ...formData,
+                          links: updated,
+                        });
+                      }}
+                    />
+
+                    <input
+                      className={inputClass}
+                      placeholder="URL"
+                      value={link.href || ""}
+                      onChange={(e) => {
+                        const updated = [...formData.links];
+                        updated[index].href = e.target.value;
+
+                        setFormData({
+                          ...formData,
+                          links: updated,
+                        });
+                      }}
+                    />
+
+                    <select
+                      className={`${inputClass} bg-[var(--surface)] text-[var(--text)]`}
+                      value={link.kind || "visit"}
+                      onChange={(e) => {
+                        const updated = [...formData.links];
+                        updated[index].kind = e.target.value;
+
+                        setFormData({
+                          ...formData,
+                          links: updated,
+                        });
+                      }}
+                    >
+                      <option className="bg-black text-white" value="visit">
+                        Visit
+                      </option>
+                      <option className="bg-black text-white" value="github">
+                        GitHub
+                      </option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = formData.links.filter(
+                          (_, i) => i !== index
+                        );
+
+                        setFormData({
+                          ...formData,
+                          links: updated,
+                        });
+                      }}
+                      className="text-sm text-red-400"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                      ...formData,
+                      links: [
+                        ...(formData.links || []),
+                        {
+                          label: "",
+                          href: "",
+                          kind: "visit",
+                        },
+                      ],
+                    });
+                  }}
+                  className="w-full py-3 border ui-border font-black text-sm"
+                >
+                  Add Link
+                </button>
+              </div>
             </div>
 
             <div>
