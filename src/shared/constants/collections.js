@@ -3,6 +3,7 @@ export const COLLECTIONS = {
   experience: "experience",
   education: "education",
   analyticsLogs: "trafficLogs",
+  adminUsers: "admins",
 };
 
 export const PORTFOLIO_COLLECTIONS = [

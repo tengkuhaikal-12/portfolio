@@ -54,7 +54,10 @@ const Footer = () => {
       const code = error?.code ? String(error.code) : "";
 
       if (code === "auth/not-admin") {
-        showAlert("Unauthorized", "Only the site owner is authorized to sign in.");
+        showAlert(
+          "Unauthorized",
+          "This account is signed in but not assigned as admin. Add Firebase custom claim { admin: true } or create admins/<uid> with active: true."
+        );
         return;
       }
 

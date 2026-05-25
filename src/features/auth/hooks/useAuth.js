@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { onIdTokenChanged } from "firebase/auth";
 import { auth } from "@/shared/services/firebase/client";
-import { hasAdminClaim } from "@/features/auth/services/authService";
+import { hasAdminAccess } from "@/features/auth/services/authService";
 
 export const useAuth = () => {
   const [user, setUser] = useState(undefined);
@@ -20,7 +20,7 @@ export const useAuth = () => {
       }
 
       try {
-        const admin = await hasAdminClaim(nextUser);
+        const admin = await hasAdminAccess(nextUser);
         if (alive) setIsAdmin(admin);
       } catch {
         if (alive) setIsAdmin(false);
