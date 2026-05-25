@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IoPowerOutline } from "react-icons/io5";
 import AlertModal from "@/shared/components/AlertModal";
@@ -6,12 +6,33 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { createPortfolioEntry } from "@/features/admin/data/adminContentService";
 import { logout } from "@/features/auth/services/authService";
 import { ROUTES } from "@/shared/constants/routes";
+import {
+  fetchVisitorAlertSettings,
+  upsertVisitorAlertWhatsappNumber,
+} from "@/features/alerts/data/visitorAlertSettingsService";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value?.toDate === "function") return value.toDate();
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDate(value) {
+  const date = toDate(value);
+  if (!date) return "Not available";
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+}
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("projects");
   const [loading, setLoading] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsForm, setSettingsForm] = useState({ whatsappNumber: "+60105618065" });
+  const [settingsMeta, setSettingsMeta] = useState({ updatedAt: null, updatedByEmail: "" });
 
   const [formData, setFormData] = useState({
     title: "",
@@ -34,6 +55,40 @@ const AdminPage = () => {
   const [startYear, setStartYear] = useState(String(currentYear));
   const [endMonth, setEndMonth] = useState("Jan");
   const [endYear, setEndYear] = useState("Present");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const run = async () => {
+      setSettingsLoading(true);
+
+      try {
+        const settings = await fetchVisitorAlertSettings();
+        if (!mounted) return;
+
+        setSettingsForm({ whatsappNumber: settings.whatsappNumber });
+        setSettingsMeta({
+          updatedAt: settings.updatedAt || null,
+          updatedByEmail: settings.updatedByEmail || "",
+        });
+      } catch (error) {
+        if (!mounted) return;
+        setAlertState({
+          open: true,
+          title: "Settings load failed",
+          message: error?.message || "Unable to load visitor alert settings.",
+        });
+      } finally {
+        if (mounted) setSettingsLoading(false);
+      }
+    };
+
+    run();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleAddTech = (event) => {
     if (event.key !== "Enter" && event.key !== ",") return;
@@ -102,6 +157,40 @@ const AdminPage = () => {
     }
   };
 
+  const handleSettingsSave = async (event) => {
+    event.preventDefault();
+
+    if (authLoading) {
+      setAlertState({ open: true, title: "Please wait", message: "Checking authentication... try again in a moment." });
+      return;
+    }
+
+    if (!isAdmin) {
+      setAlertState({ open: true, title: "Unauthorized", message: "Access denied: you are not an admin." });
+      return;
+    }
+
+    setSettingsLoading(true);
+
+    try {
+      await upsertVisitorAlertWhatsappNumber(settingsForm.whatsappNumber);
+      const latestSettings = await fetchVisitorAlertSettings();
+
+      setSettingsForm({ whatsappNumber: latestSettings.whatsappNumber });
+      setSettingsMeta({
+        updatedAt: latestSettings.updatedAt || null,
+        updatedByEmail: latestSettings.updatedByEmail || "",
+      });
+
+      setAlertState({ open: true, title: "Saved", message: "WhatsApp alert number updated successfully." });
+    } catch (error) {
+      console.error(error);
+      setAlertState({ open: true, title: "Save failed", message: error?.message || "Failed to update WhatsApp number." });
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
   const inputFields = [
     { tab: "projects", title: "Project Name", role: "Role/Position" },
     { tab: "experience", title: "Job Title", role: "Company/Organization" },
@@ -144,7 +233,7 @@ const AdminPage = () => {
         </div>
 
         <div className="flex bg-ink border-t border-paper/10">
-          {["projects", "experience", "education"].map((tab) => (
+          {["projects", "experience", "education", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -157,121 +246,157 @@ const AdminPage = () => {
           ))}
         </div>
 
-        <form onSubmit={handleSave} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-5">
-            <div>
-              <label className="block text-xs font-black text-text/70 uppercase">
-                {inputFields.find((field) => field.tab === activeTab)?.title}
-              </label>
-              <input
-                required
-                className={inputClassNames}
-                value={formData.title}
-                onChange={(event) => setFormData((prev) => ({ ...prev, title: event.target.value }))}
-              />
-            </div>
+        {activeTab === "settings" ? (
+          <form onSubmit={handleSettingsSave} className="p-8 space-y-6">
+            <div className="ui-soft border ui-border p-5 space-y-4">
+              <h2 className="text-lg font-black uppercase tracking-widest">Visitor Alert Settings</h2>
+              <p className="text-sm text-text/70">
+                Set the admin WhatsApp number that receives first-visit alerts.
+              </p>
 
-            <div>
-              <label className="block text-xs font-black text-text/70 uppercase">
-                {inputFields.find((field) => field.tab === activeTab)?.role}
-              </label>
-              <input
-                required
-                className={inputClassNames}
-                value={formData.subtitle}
-                onChange={(event) => setFormData((prev) => ({ ...prev, subtitle: event.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <label className="block text-xs font-black text-text/70 uppercase">Start Date</label>
-              <div className="flex gap-2">
-                <select className={inputClassNames} value={startMonth} onChange={(event) => setStartMonth(event.target.value)}>
-                  {MONTHS.map((month) => (
-                    <option key={month} value={month}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
-                <select className={inputClassNames} value={startYear} onChange={(event) => setStartYear(event.target.value)}>
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <label className="block text-xs font-black text-text/70 uppercase">End Date</label>
-              <div className="flex gap-2">
-                <select className={inputClassNames} value={endMonth} onChange={(event) => setEndMonth(event.target.value)}>
-                  {MONTHS.map((month) => (
-                    <option key={month} value={month}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
-                <select className={inputClassNames} value={endYear} onChange={(event) => setEndYear(event.target.value)}>
-                  <option value="Present">Present</option>
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-5">
-            {activeTab === "projects" ? (
               <div>
-                <label className="block text-xs font-black text-text/70 uppercase">Tech Stack (Enter to add)</label>
+                <label className="block text-xs font-black text-text/70 uppercase">WhatsApp Number (E.164 format)</label>
                 <input
+                  required
+                  type="tel"
                   className={inputClassNames}
-                  value={techInput}
-                  onKeyDown={handleAddTech}
-                  onChange={(event) => setTechInput(event.target.value)}
+                  placeholder="+60105618065"
+                  value={settingsForm.whatsappNumber}
+                  onChange={(event) => setSettingsForm({ whatsappNumber: event.target.value })}
                 />
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {techStack.map((tech, index) => (
-                    <span key={`${tech}-${index}`} className="ui-pill border px-3 py-1 text-xs font-bold flex items-center gap-1">
-                      {tech}
-                      <button type="button" onClick={() => removeTech(index)} className="text-red-500">
-                        x
-                      </button>
-                    </span>
-                  ))}
+              </div>
+
+              <div className="text-xs text-text/70 space-y-1">
+                <p>Last updated: {formatDate(settingsMeta.updatedAt)}</p>
+                <p>Updated by: {settingsMeta.updatedByEmail || "Not available"}</p>
+              </div>
+            </div>
+
+            <button
+              disabled={settingsLoading}
+              type="submit"
+              className="w-full bg-text text-bg py-4 font-black uppercase tracking-widest hover:opacity-90 transition disabled:opacity-60"
+            >
+              {settingsLoading ? "Updating..." : "Update WhatsApp Number"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSave} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-black text-text/70 uppercase">
+                  {inputFields.find((field) => field.tab === activeTab)?.title}
+                </label>
+                <input
+                  required
+                  className={inputClassNames}
+                  value={formData.title}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, title: event.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-text/70 uppercase">
+                  {inputFields.find((field) => field.tab === activeTab)?.role}
+                </label>
+                <input
+                  required
+                  className={inputClassNames}
+                  value={formData.subtitle}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, subtitle: event.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-xs font-black text-text/70 uppercase">Start Date</label>
+                <div className="flex gap-2">
+                  <select className={inputClassNames} value={startMonth} onChange={(event) => setStartMonth(event.target.value)}>
+                    {MONTHS.map((month) => (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                  <select className={inputClassNames} value={startYear} onChange={(event) => setStartYear(event.target.value)}>
+                    {years.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <label className="block text-xs font-black text-text/70 uppercase">End Date</label>
+                <div className="flex gap-2">
+                  <select className={inputClassNames} value={endMonth} onChange={(event) => setEndMonth(event.target.value)}>
+                    {MONTHS.map((month) => (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                  <select className={inputClassNames} value={endYear} onChange={(event) => setEndYear(event.target.value)}>
+                    <option value="Present">Present</option>
+                    {years.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            ) : null}
-
-            <div>
-              <label className="block text-xs font-black text-text/70 uppercase">Description</label>
-              <textarea
-                required
-                rows="4"
-                className={inputClassNames}
-                value={formData.description}
-                onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
-              />
             </div>
 
-            <div>
-              <label className="block text-xs font-black text-text/70 uppercase">Media Upload</label>
-              <input type="file" onChange={handleImage} className="text-sm cursor-pointer" />
-              {formData.image ? <img src={formData.image} className="mt-2 h-20 border ui-border" alt="preview" /> : null}
-            </div>
-          </div>
+            <div className="space-y-5">
+              {activeTab === "projects" ? (
+                <div>
+                  <label className="block text-xs font-black text-text/70 uppercase">Tech Stack (Enter to add)</label>
+                  <input
+                    className={inputClassNames}
+                    value={techInput}
+                    onKeyDown={handleAddTech}
+                    onChange={(event) => setTechInput(event.target.value)}
+                  />
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {techStack.map((tech, index) => (
+                      <span key={`${tech}-${index}`} className="ui-pill border px-3 py-1 text-xs font-bold flex items-center gap-1">
+                        {tech}
+                        <button type="button" onClick={() => removeTech(index)} className="text-red-500">
+                          x
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
-          <button
-            disabled={loading}
-            type="submit"
-            className="md:col-span-2 w-full bg-text text-bg py-4 font-black uppercase tracking-widest hover:opacity-90 transition disabled:opacity-60"
-          >
-            {loading ? "Syncing..." : "Save Entry"}
-          </button>
-        </form>
+              <div>
+                <label className="block text-xs font-black text-text/70 uppercase">Description</label>
+                <textarea
+                  required
+                  rows="4"
+                  className={inputClassNames}
+                  value={formData.description}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-text/70 uppercase">Media Upload</label>
+                <input type="file" onChange={handleImage} className="text-sm cursor-pointer" />
+                {formData.image ? <img src={formData.image} className="mt-2 h-20 border ui-border" alt="preview" /> : null}
+              </div>
+            </div>
+
+            <button
+              disabled={loading}
+              type="submit"
+              className="md:col-span-2 w-full bg-text text-bg py-4 font-black uppercase tracking-widest hover:opacity-90 transition disabled:opacity-60"
+            >
+              {loading ? "Syncing..." : "Save Entry"}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

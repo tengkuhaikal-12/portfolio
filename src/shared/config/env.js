@@ -1,10 +1,10 @@
-function buildDefaultContactEndpoint() {
+function buildDefaultFunctionEndpoint(functionName) {
   const slash =
     (typeof window !== "undefined" && typeof window.location?.pathname === "string"
       ? window.location.pathname.slice(0, 1)
       : "/") || "/";
 
-  return ["", ".netlify", "functions", "contact"].join(slash);
+  return ["", ".netlify", "functions", functionName].join(slash);
 }
 
 function normalizeEmailPart(value = "") {
@@ -20,7 +20,8 @@ function buildOwnerAdminEmail() {
 }
 
 export const env = {
-  contactEndpoint: buildDefaultContactEndpoint(),
+  contactEndpoint: import.meta.env.VITE_CONTACT_ENDPOINT || buildDefaultFunctionEndpoint("contact"),
+  visitorAlertEndpoint: import.meta.env.VITE_VISITOR_ALERT_ENDPOINT || buildDefaultFunctionEndpoint("visitor-alert"),
   analyticsCollection: import.meta.env.VITE_ANALYTICS_COLLECTION || "trafficLogs",
   ownerAdminEmail: buildOwnerAdminEmail(),
 };

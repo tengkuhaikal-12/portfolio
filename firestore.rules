@@ -27,6 +27,12 @@ service cloud.firestore {
     // - anonymousId: string (required)
     // - uid/email/authProvider: optional identity fields
     // - ipAddress/ipSource: optional strings
+    //
+    // appConfig/visitorAlerts
+    // - whatsappNumber: string (required, E.164 format)
+    // - updatedAt: timestamp (required, must equal request.time)
+    // - updatedByUid: string (optional)
+    // - updatedByEmail: string (optional)
 
     function isAuthenticated() {
       return request.auth != null;
@@ -149,6 +155,20 @@ service cloud.firestore {
         validOptionalString('ipSource', 128);
     }
 
+    function validVisitorAlertConfig() {
+      let requiredFields = ['whatsappNumber', 'updatedAt'];
+      let allowedFields = ['whatsappNumber', 'updatedAt', 'updatedByUid', 'updatedByEmail'];
+
+      return required(requiredFields) &&
+        allowed(allowedFields) &&
+        validRequiredString('whatsappNumber', 8, 20) &&
+        request.resource.data.whatsappNumber.matches('^\\+[1-9][0-9]{7,14}$') &&
+        request.resource.data.updatedAt is timestamp &&
+        request.resource.data.updatedAt == request.time &&
+        validOptionalString('updatedByUid', 128) &&
+        validOptionalString('updatedByEmail', 320);
+    }
+
     match /projects/{docId} {
       allow read: if true;
       allow create: if isAdmin() && validPortfolioEntry();
@@ -174,6 +194,12 @@ service cloud.firestore {
       allow create: if validTrafficLog();
       allow read: if isAdmin();
       allow update, delete: if false;
+    }
+
+    match /appConfig/{docId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin() && docId == 'visitorAlerts' && validVisitorAlertConfig();
+      allow delete: if false;
     }
 
     match /{document=**} {
