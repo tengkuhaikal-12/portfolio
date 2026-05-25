@@ -1,10 +1,10 @@
 # Portfolio
 
-## Visitor WhatsApp Alerts (WBM)
+## Visitor WhatsApp Alerts (whatsapp-web.js)
 
 The site sends a first-visit WhatsApp alert from the backend Netlify Function at
 `netlify/functions/visitor-alert.js`. The frontend only posts visitor metadata;
-the WhatsApp send happens on the backend through `wbm`.
+the WhatsApp send happens on the backend through `whatsapp-web.js`.
 
 Default recipient: `+60105618065`. Admins can update the number from
 `Portfolio Manager > Settings`. The value is stored in Firestore at
@@ -29,18 +29,19 @@ Required for dynamic settings:
 FIREBASE_SERVICE_ACCOUNT_JSON={"project_id":"...","client_email":"...","private_key":"..."}
 ```
 
-Optional WBM settings:
+Optional WhatsApp Web settings:
 
 ```text
 WHATSAPP_ALERT_TO=+60105618065
-WBM_SESSION=true
-WBM_SHOW_BROWSER=false
-WBM_SEND_TIMEOUT_MS=90000
+WHATSAPP_SHOW_BROWSER=false
+WHATSAPP_SESSION_PATH=.wwebjs_auth
+WHATSAPP_SEND_TIMEOUT_MS=180000
+PUPPETEER_EXECUTABLE_PATH=C:\path\to\chrome.exe
 ```
 
-`WBM_SESSION` defaults to `true` so WBM can remember the WhatsApp Web session.
-Use `WBM_SESSION=false` once only when you intentionally need to reset the saved
-session.
+`WHATSAPP_SESSION_PATH` stores the WhatsApp Web login locally. The default
+`.wwebjs_auth/` folder is ignored by Git. Delete that folder only when you
+intentionally need to reset the linked-device session.
 
 ### QR Authentication
 
@@ -48,15 +49,20 @@ session.
 2. Run the Netlify function locally with `npx netlify dev`.
 3. Trigger the first visitor alert by opening the site or posting to
    `/.netlify/functions/visitor-alert`.
-4. When WBM prints a WhatsApp Web QR code in the terminal, scan it from WhatsApp:
+4. When the function prints a WhatsApp Web QR code in the terminal, scan it from WhatsApp:
    `Settings > Linked devices > Link a device`.
-5. Keep `WBM_SESSION=true` after authentication. WBM will reuse the saved session
-   and the backend keeps one warm WBM browser/session instead of starting a new
+5. Keep `.wwebjs_auth/` in place locally. The backend reuses the saved session
+   and keeps one warm WhatsApp Web browser/client instead of starting a new
    authentication flow for every request.
 
-If the hosting environment clears WBM's saved session files during a deploy or
+If the hosting environment clears the saved session files during a deploy or
 cold start, scan the QR code again. Normal warm requests reuse the initialized
-backend WBM session.
+backend WhatsApp Web session.
+
+This browser-based WhatsApp Web flow is intended for local development or an
+always-on server with persistent disk. Netlify production functions do not
+provide a reliable persistent browser/session environment; use the official
+WhatsApp Cloud API or another hosted WhatsApp provider for production alerts.
 
 ### Duplicate Prevention
 

@@ -25,6 +25,7 @@ dist-ssr
 
 .env
 .npm-cache/
+.wwebjs_auth/
 
 # Local Netlify folder
 .netlify

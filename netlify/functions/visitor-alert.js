@@ -1,20 +1,11 @@
 import { getAdminFirestore } from "./_shared/firebaseAdmin.js";
 
-const DEFAULT_WHATSAPP_NUMBER = "+60105618065";
 const APP_CONFIG_COLLECTION = "appConfig";
 const VISITOR_ALERT_DOC_ID = "visitorAlerts";
-const E164_REGEX = /^\+[1-9]\d{7,14}$/;
-const DEFAULT_WBM_SEND_TIMEOUT_MS = 90000;
-
-let wbmStartPromise = null;
-let wbmSendQueue = Promise.resolve();
 
 const json = (statusCode, payload, headers = {}) => ({
   statusCode,
-  headers: {
-    "Content-Type": "application/json; charset=utf-8",
-    ...headers,
-  },
+  headers: { "Content-Type": "application/json; charset=utf-8", ...headers },
   body: JSON.stringify(payload),
 });
 
@@ -28,24 +19,16 @@ const getOrigin = (event) =>
 const parseAllowedOrigins = () =>
   (process.env.ALLOWED_ORIGINS || "")
     .split(",")
-    .map((value) => value.trim())
+    .map((v) => v.trim())
     .filter(Boolean);
 
 const corsHeadersForOrigin = (origin) => {
   const allowed = parseAllowedOrigins();
 
-  if (!origin) {
-    return {
-      "Access-Control-Allow-Origin": "*",
-      "Vary": "Origin",
-    };
-  }
+  if (!origin) return { "Access-Control-Allow-Origin": "*", Vary: "Origin" };
 
   if (allowed.length === 0 || allowed.includes(origin)) {
-    return {
-      "Access-Control-Allow-Origin": origin,
-      "Vary": "Origin",
-    };
+    return { "Access-Control-Allow-Origin": origin, Vary: "Origin" };
   }
 
   return null;
@@ -54,174 +37,137 @@ const corsHeadersForOrigin = (origin) => {
 const parseBody = (event) => {
   if (!event.body) return {};
   try {
-    return JSON.parse(event.isBase64Encoded ? Buffer.from(event.body, "base64").toString("utf8") : event.body);
+    const rawBody = event.isBase64Encoded
+      ? Buffer.from(event.body, "base64").toString("utf8")
+      : event.body;
+    return JSON.parse(rawBody);
   } catch {
     return null;
   }
 };
 
-function normalizeWhatsappNumber(value) {
-  return String(value || "").trim().replace(/\s+/g, "");
-}
-
-function isValidWhatsappNumber(value) {
-  return E164_REGEX.test(normalizeWhatsappNumber(value));
-}
-
 function sanitizeString(value, maxLen = 256) {
   return String(value || "").trim().slice(0, maxLen);
 }
 
-function positiveIntegerFromEnv(name, fallback) {
-  const value = Number.parseInt(process.env[name] || "", 10);
-  return Number.isFinite(value) && value > 0 ? value : fallback;
-}
+function formatDuration(ms) {
+  const totalSeconds = Math.max(0, Math.round(Number(ms || 0) / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
 
-function toWbmPhoneNumber(value) {
-  const digits = String(value || "").replace(/\D/g, "");
-  if (digits.length < 8 || digits.length > 15) return "";
-  return digits;
-}
-
-function withTimeout(promise, timeoutMs, label) {
-  let timeoutId;
-  const timeout = new Promise((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
-  });
-
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
-}
-
-function ensureWbmStdoutSupport() {
-  const noop = () => {};
-  if (typeof process.stdout.clearLine !== "function") {
-    process.stdout.clearLine = noop;
-  }
-  if (typeof process.stdout.cursorTo !== "function") {
-    process.stdout.cursorTo = noop;
-  }
-}
-
-async function loadConfiguredWhatsappNumber() {
-  const envNumber = normalizeWhatsappNumber(process.env.WHATSAPP_ALERT_TO || "");
-  const fallbackNumber = isValidWhatsappNumber(envNumber) ? envNumber : DEFAULT_WHATSAPP_NUMBER;
-  const firestore = getAdminFirestore();
-  if (!firestore) return fallbackNumber;
-
-  try {
-    const snapshot = await firestore.collection(APP_CONFIG_COLLECTION).doc(VISITOR_ALERT_DOC_ID).get();
-    const configured = normalizeWhatsappNumber(snapshot.data()?.whatsappNumber);
-    return isValidWhatsappNumber(configured) ? configured : fallbackNumber;
-  } catch {
-    return fallbackNumber;
-  }
+  if (minutes <= 0) return `${seconds}s`;
+  return `${minutes}m ${seconds}s`;
 }
 
 function buildVisitorMessage(payload) {
   const now = new Date();
 
-  const day = sanitizeString(payload.day, 40) || now.toLocaleDateString(undefined, { weekday: "long" });
-  const time = sanitizeString(payload.time, 80) || now.toLocaleTimeString();
   const identity = sanitizeString(payload.identity, 320) || "Guest / Unknown User";
 
-  const deviceType = sanitizeString(payload.device?.deviceType || payload.deviceType, 32) || "unknown";
-  const browser = sanitizeString(payload.device?.browser || payload.browser, 64) || "Unknown";
-  const os = sanitizeString(payload.device?.os || payload.os, 64) || "Unknown";
+  const deviceType =
+    sanitizeString(payload.device?.deviceType || payload.deviceType, 32) ||
+    "unknown";
+
+  const browser =
+    sanitizeString(payload.device?.browser || payload.browser, 64) ||
+    "Unknown";
+
+  const os =
+    sanitizeString(payload.device?.os || payload.os, 64) ||
+    "Unknown";
+
+  const startedAt = sanitizeString(payload.startedAt, 80) || "Unknown";
+  const endedAt = sanitizeString(payload.endedAt, 80) || now.toLocaleString();
+  const duration = formatDuration(payload.durationMs);
+
+  const routes = Array.isArray(payload.routes) ? payload.routes : [];
+
+  const routeText =
+    routes.length > 0
+      ? routes
+        .slice(0, 15)
+        .map((route, index) => {
+          const path = sanitizeString(route.path, 120) || "Unknown route";
+          const timeSpent = formatDuration(route.durationMs);
+          const visits = Number(route.visits || 1);
+          return `${index + 1}. ${path} — ${timeSpent} (${visits} visit${visits > 1 ? "s" : ""})`;
+        })
+        .join("\n")
+      : "No route movement recorded";
 
   return [
-    "New Website Visitor Alert",
+    "📊 Website Visitor Session Summary",
     "",
-    `Time: ${time}`,
-    `Day: ${day}`,
-    `Identity: ${identity}`,
-    `Device: ${deviceType}, ${browser}, ${os}`,
+    `👤 Identity: ${identity}`,
+    `💻 Device: ${deviceType}`,
+    `🌐 Browser: ${browser}`,
+    `🖥 OS: ${os}`,
+    "",
+    `🟢 Started: ${startedAt}`,
+    `🔴 Ended: ${endedAt}`,
+    `⏱ Duration: ${duration}`,
+    "",
+    "🧭 Movement:",
+    routeText,
   ].join("\n");
 }
 
-async function importWbm() {
-  ensureWbmStdoutSupport();
+async function loadTelegramConfig() {
+  const firestore = getAdminFirestore();
 
-  const wbmModule = await import("wbm");
-  const wbm = wbmModule?.default || wbmModule;
+  let botToken = process.env.TELEGRAM_BOT_TOKEN;
+  let chatId = process.env.TELEGRAM_CHAT_ID;
 
-  if (!wbm?.start || !wbm?.sendTo) {
-    throw new Error("WBM module did not expose the expected start/sendTo API.");
-  }
-
-  return wbm;
-}
-
-function getWbmStartOptions() {
-  const showBrowser = process.env.WBM_SHOW_BROWSER === "true";
-  const session = process.env.WBM_SESSION !== "false";
-
-  return { showBrowser, session };
-}
-
-async function getStartedWbm() {
-  if (!wbmStartPromise) {
-    wbmStartPromise = (async () => {
-      const wbm = await importWbm();
-      await wbm.start(getWbmStartOptions());
-      return wbm;
-    })();
-
-    wbmStartPromise.catch(() => {
-      wbmStartPromise = null;
-    });
-  }
-
-  return wbmStartPromise;
-}
-
-async function resetWbmSession() {
-  const currentStart = wbmStartPromise;
-  wbmStartPromise = null;
-
-  if (!currentStart) return;
+  if (!firestore) return { botToken, chatId };
 
   try {
-    const wbm = await currentStart;
-    if (wbm?.end) {
-      await wbm.end();
-    }
+    const snapshot = await firestore
+      .collection(APP_CONFIG_COLLECTION)
+      .doc(VISITOR_ALERT_DOC_ID)
+      .get();
+
+    const data = snapshot.data() || {};
+
+    botToken = data.telegramBotToken || botToken;
+    chatId = data.telegramChatId || chatId;
   } catch {
-    // Ignore cleanup errors; the next request will attempt a fresh start.
-  }
-}
-
-function queueWbmSend(task) {
-  const run = wbmSendQueue.then(task, task);
-  wbmSendQueue = run.catch(() => {});
-  return run;
-}
-
-async function sendWhatsappAlert({ toNumber, body }) {
-  const recipient = toWbmPhoneNumber(toNumber);
-  if (!recipient) {
-    throw new Error("Configured WhatsApp number is invalid for WBM.");
+    // ignore Firestore error
   }
 
-  const timeoutMs = positiveIntegerFromEnv("WBM_SEND_TIMEOUT_MS", DEFAULT_WBM_SEND_TIMEOUT_MS);
+  return { botToken, chatId };
+}
 
-  return queueWbmSend(async () => {
-    try {
-      const wbm = await getStartedWbm();
-      await withTimeout(wbm.sendTo(recipient, body), timeoutMs, "WBM WhatsApp send");
-    } catch (error) {
-      await resetWbmSession();
-      throw error;
+async function sendTelegramAlert(messageText) {
+  const { botToken, chatId } = await loadTelegramConfig();
+
+  if (!botToken || !chatId) {
+    throw new Error("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID");
+  }
+
+  const response = await fetch(
+    `https://api.telegram.org/bot${botToken}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: messageText,
+      }),
     }
-  });
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Telegram send failed: ${errorText}`);
+  }
 }
 
 export const handler = async (event, context) => {
-  if (context) {
-    context.callbackWaitsForEmptyEventLoop = false;
-  }
+  if (context) context.callbackWaitsForEmptyEventLoop = false;
 
   const origin = getOrigin(event);
   const cors = corsHeadersForOrigin(origin);
+
   if (!cors) return json(403, { error: "CORS blocked" });
 
   if (event.httpMethod === "OPTIONS") {
@@ -242,16 +188,24 @@ export const handler = async (event, context) => {
   }
 
   const body = parseBody(event);
+
   if (!body) return json(400, { error: "Invalid JSON" }, cors);
 
-  const messageText = buildVisitorMessage(body);
-
   try {
-    const toNumber = await loadConfiguredWhatsappNumber();
-    await sendWhatsappAlert({ toNumber, body: messageText });
-    return json(200, { ok: true }, cors);
+    const messageText = buildVisitorMessage(body);
+    await sendTelegramAlert(messageText);
+
+    return json(200, { ok: true, sent: true }, cors);
   } catch (error) {
-    console.error("Visitor alert send failed:", error?.message || error);
-    return json(500, { error: "Failed to send WhatsApp alert" }, cors);
+    console.error("Telegram alert failed:", error?.message || error);
+
+    return json(
+      500,
+      {
+        error: "Failed to send Telegram alert",
+        detail: error?.message || String(error),
+      },
+      cors
+    );
   }
 };

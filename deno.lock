@@ -20,17 +20,21 @@
         "npm:eslint-plugin-react-hooks@^7.0.1",
         "npm:eslint-plugin-react-refresh@~0.5.2",
         "npm:eslint@^9.39.4",
+        "npm:firebase-admin@^13.10.0",
         "npm:firebase@^12.12.1",
         "npm:globals@^17.4.0",
         "npm:netlify-cli@^26.0.1",
         "npm:nodemailer@^6.9.14",
         "npm:postcss@^8.5.10",
+        "npm:puppeteer@^25.0.4",
+        "npm:qrcode-terminal@^0.12.0",
         "npm:react-dom@^19.2.4",
         "npm:react-icons@^5.6.0",
         "npm:react-router-dom@^7.14.1",
         "npm:react@^19.2.4",
         "npm:tailwindcss@^4.2.2",
-        "npm:vite@^8.0.4"
+        "npm:vite@^8.0.4",
+        "npm:whatsapp-web.js@^1.34.7"
       ]
     }
   }
