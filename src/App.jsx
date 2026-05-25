@@ -1,32 +1,16 @@
-import { Routes, Route } from "react-router-dom";
-import Portfolio from "./pages/Portfolio";
-import Admin from "./admin/Admin";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import ProjectDetail from "./pages/ProjectDetail";
-import ExperienceDetail from "./pages/ExperienceDetail";
-import ScrollToTop from "./component/ScrollToTop";
+import { BrowserRouter } from "react-router-dom";
+import AppProviders from "@/app/providers/AppProviders";
+import AppRouter from "@/app/router/AppRouter";
+import "./index.css";
 
-function App() {
-    return (
-        <>
-            <ScrollToTop />
-            <Routes>
-                <Route path="/" element={<Portfolio />} />
-                <Route path="/projects/:id" element={<ProjectDetail />} />
-                <Route path="/experience/:id" element={<ExperienceDetail />} />
-
-                <Route
-                    path="/admin"
-                    element={
-                        <ProtectedRoute>
-                            <Admin />
-                        </ProtectedRoute>
-                    }
-                />
-            </Routes>
-        </>
-    );
-}
+const App = () => {
+  return (
+    <BrowserRouter>
+      <AppProviders>
+        <AppRouter />
+      </AppProviders>
+    </BrowserRouter>
+  );
+};
 
 export default App;
-

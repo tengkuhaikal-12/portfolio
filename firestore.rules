@@ -1,0 +1,188 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model (Prototype)
+    // ===============================================================
+    // projects / experience / education
+    // - title: string (required, <= 120)
+    // - subtitle: string (required, <= 120)
+    // - description: string (required, <= 12000)
+    // - duration: string (required, <= 64)
+    // - sortDate: number (required)
+    // - image: string (optional, <= 900000)
+    // - techStack: list (optional, <= 50 items)
+    // - links: list (optional, <= 25 items)
+    // - gallery: list (optional, <= 60 items)
+    // - createdAt: timestamp (optional; immutable after set)
+    // - updatedAt: timestamp (optional)
+    //
+    // trafficLogs
+    // - createdAt: timestamp (required, must equal request.time)
+    // - clientTimestamp: string (required)
+    // - route/path/query: strings (required)
+    // - os/browser/deviceType: strings (required)
+    // - userAgent/platform/language/timezone/screen/referrer: strings (optional)
+    // - anonymousId: string (required)
+    // - uid/email/authProvider: optional identity fields
+    // - ipAddress/ipSource: optional strings
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      let adminEmails = [
+        'haikaltengku836@gmail.com'
+      ];
+
+      let emailBasedAdmin =
+        isAuthenticated() &&
+        request.auth.token.email is string &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.email in adminEmails;
+
+      let claimBasedAdmin =
+        isAuthenticated() &&
+        request.auth.token.admin == true;
+
+      return emailBasedAdmin || claimBasedAdmin;
+    }
+
+    function required(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function allowed(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function validRequiredString(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    function validOptionalString(field, maxLen) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is string && request.resource.data[field].size() <= maxLen);
+    }
+
+    function validOptionalTimestamp(field) {
+      return !(field in request.resource.data) || request.resource.data[field] is timestamp;
+    }
+
+    function validOptionalList(field, maxLen) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is list && request.resource.data[field].size() <= maxLen);
+    }
+
+    function validPortfolioEntry() {
+      let requiredFields = ['title', 'subtitle', 'description', 'duration', 'sortDate'];
+      let allowedFields = [
+        'title', 'subtitle', 'description', 'duration', 'sortDate',
+        'image', 'techStack', 'createdAt', 'updatedAt', 'links', 'gallery',
+        'status', 'shortDescription', 'location', 'link', 'url', 'liveUrl',
+        'github', 'repoUrl', 'tags', 'images', 'imageGallery'
+      ];
+
+      return required(requiredFields) &&
+        allowed(allowedFields) &&
+        validRequiredString('title', 1, 120) &&
+        validRequiredString('subtitle', 1, 120) &&
+        validRequiredString('description', 1, 12000) &&
+        validRequiredString('duration', 1, 64) &&
+        request.resource.data.sortDate is number &&
+        validOptionalString('image', 900000) &&
+        validOptionalList('techStack', 50) &&
+        validOptionalList('links', 25) &&
+        validOptionalList('gallery', 60) &&
+        validOptionalList('tags', 50) &&
+        validOptionalTimestamp('createdAt') &&
+        validOptionalTimestamp('updatedAt') &&
+        validOptionalString('status', 64) &&
+        validOptionalString('shortDescription', 1000) &&
+        validOptionalString('location', 120) &&
+        validOptionalString('link', 2000) &&
+        validOptionalString('url', 2000) &&
+        validOptionalString('liveUrl', 2000) &&
+        validOptionalString('github', 2000) &&
+        validOptionalString('repoUrl', 2000);
+    }
+
+    function createdAtUnchanged() {
+      return !('createdAt' in resource.data) ||
+        request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    function validTrafficLog() {
+      let requiredFields = [
+        'createdAt', 'clientTimestamp', 'route', 'path', 'query',
+        'os', 'browser', 'deviceType', 'anonymousId'
+      ];
+
+      let allowedFields = [
+        'createdAt', 'clientTimestamp', 'route', 'path', 'query',
+        'os', 'browser', 'deviceType', 'userAgent', 'platform',
+        'language', 'timezone', 'screen', 'referrer', 'anonymousId',
+        'uid', 'email', 'authProvider', 'ipAddress', 'ipSource'
+      ];
+
+      return required(requiredFields) &&
+        allowed(allowedFields) &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.createdAt == request.time &&
+        validRequiredString('clientTimestamp', 1, 80) &&
+        validRequiredString('route', 1, 512) &&
+        validRequiredString('path', 1, 512) &&
+        validRequiredString('query', 0, 1024) &&
+        validRequiredString('os', 1, 64) &&
+        validRequiredString('browser', 1, 64) &&
+        validRequiredString('deviceType', 1, 32) &&
+        validRequiredString('anonymousId', 1, 128) &&
+        validOptionalString('userAgent', 2048) &&
+        validOptionalString('platform', 128) &&
+        validOptionalString('language', 64) &&
+        validOptionalString('timezone', 128) &&
+        validOptionalString('screen', 64) &&
+        validOptionalString('referrer', 2048) &&
+        validOptionalString('uid', 128) &&
+        validOptionalString('email', 320) &&
+        validOptionalString('authProvider', 128) &&
+        validOptionalString('ipAddress', 128) &&
+        validOptionalString('ipSource', 128);
+    }
+
+    match /projects/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() && validPortfolioEntry();
+      allow update: if isAdmin() && validPortfolioEntry() && createdAtUnchanged();
+      allow delete: if isAdmin();
+    }
+
+    match /experience/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() && validPortfolioEntry();
+      allow update: if isAdmin() && validPortfolioEntry() && createdAtUnchanged();
+      allow delete: if isAdmin();
+    }
+
+    match /education/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() && validPortfolioEntry();
+      allow update: if isAdmin() && validPortfolioEntry() && createdAtUnchanged();
+      allow delete: if isAdmin();
+    }
+
+    match /trafficLogs/{logId} {
+      allow create: if validTrafficLog();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
