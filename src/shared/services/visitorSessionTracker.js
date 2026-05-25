@@ -2,10 +2,10 @@ function getDeviceInfo() {
     const ua = navigator.userAgent;
 
     let browser = "Unknown";
-    if (ua.includes("Chrome")) browser = "Chrome";
+    if (ua.includes("Edg")) browser = "Edge";
+    else if (ua.includes("Chrome")) browser = "Chrome";
     else if (ua.includes("Firefox")) browser = "Firefox";
     else if (ua.includes("Safari")) browser = "Safari";
-    else if (ua.includes("Edge")) browser = "Edge";
 
     let os = "Unknown";
     if (ua.includes("Windows")) os = "Windows";
@@ -19,13 +19,18 @@ function getDeviceInfo() {
     return { browser, os, deviceType };
 }
 
-export function startVisitorSessionTracking({ endpoint, identity = "Guest / Unknown User" }) {
-    const startedAtDate = new Date();
+export function startVisitorSessionTracking({
+    endpoint,
+    identity = "Guest / Unknown User",
+    idleMs = 5 * 60 * 1000,
+}) {
+    if (window.__visitorSessionTrackerStarted) return;
+    window.__visitorSessionTrackerStarted = true;
 
     const session = {
         identity,
         device: getDeviceInfo(),
-        startedAt: startedAtDate.toLocaleString(),
+        startedAt: new Date().toLocaleString(),
         startedAtMs: Date.now(),
         routes: [],
     };
@@ -36,9 +41,9 @@ export function startVisitorSessionTracking({ endpoint, identity = "Guest / Unkn
     let idleTimer = null;
 
     function saveRoute(path, durationMs) {
-        if (!path) return;
+        if (!path || durationMs < 1000) return;
 
-        const existing = session.routes.find((r) => r.path === path);
+        const existing = session.routes.find((route) => route.path === path);
 
         if (existing) {
             existing.durationMs += durationMs;
@@ -53,6 +58,8 @@ export function startVisitorSessionTracking({ endpoint, identity = "Guest / Unkn
     }
 
     function trackRouteChange() {
+        if (hasSent) return;
+
         const newPath = window.location.pathname + window.location.search;
         const now = Date.now();
 
@@ -65,9 +72,11 @@ export function startVisitorSessionTracking({ endpoint, identity = "Guest / Unkn
         resetIdleTimer();
     }
 
-    async function sendSummary(reason = "ended") {
+    function sendSummary(reason = "ended") {
         if (hasSent) return;
         hasSent = true;
+
+        clearTimeout(idleTimer);
 
         const now = Date.now();
         saveRoute(currentPath, now - currentStartedAt);
@@ -89,25 +98,29 @@ export function startVisitorSessionTracking({ endpoint, identity = "Guest / Unkn
             return;
         }
 
-        await fetch(endpoint, {
+        fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body,
             keepalive: true,
-        });
+        }).catch(() => { });
     }
 
     function resetIdleTimer() {
+        if (hasSent) return;
+
         clearTimeout(idleTimer);
 
         idleTimer = setTimeout(() => {
-            sendSummary("inactive");
-        }, 2 * 60 * 1000);
+            sendSummary("idle_5_minutes");
+        }, idleMs);
     }
 
-    ["click", "scroll", "keydown", "mousemove", "touchstart"].forEach((eventName) => {
-        window.addEventListener(eventName, resetIdleTimer, { passive: true });
-    });
+    ["click", "scroll", "keydown", "mousemove", "touchstart"].forEach(
+        (eventName) => {
+            window.addEventListener(eventName, resetIdleTimer, { passive: true });
+        }
+    );
 
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
@@ -123,14 +136,10 @@ export function startVisitorSessionTracking({ endpoint, identity = "Guest / Unkn
     };
 
     window.addEventListener("popstate", trackRouteChange);
-    window.addEventListener("beforeunload", () => sendSummary("page_closed"));
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "hidden") sendSummary("tab_hidden");
+
+    window.addEventListener("pagehide", () => {
+        sendSummary("page_closed");
     });
 
     resetIdleTimer();
-
-    return {
-        sendNow: sendSummary,
-    };
 }

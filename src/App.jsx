@@ -10,6 +10,7 @@ const App = () => {
     startVisitorSessionTracking({
       endpoint: "/.netlify/functions/visitor-alert",
       identity: localStorage.getItem("userEmail") || "Guest / Unknown User",
+      idleMs: 5 * 60 * 1000,
     });
   }, []);
 
