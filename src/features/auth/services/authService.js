@@ -1,17 +1,22 @@
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "@/shared/services/firebase/client";
-import { isAdminEmail } from "@/features/auth/constants/adminEmails";
+
+export async function hasAdminClaim(user, forceRefresh = false) {
+  if (!user) return false;
+  const tokenResult = await user.getIdTokenResult(forceRefresh);
+  return tokenResult?.claims?.admin === true;
+}
 
 export async function loginWithGooglePopup() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
 
   const result = await signInWithPopup(auth, provider);
-  const email = result?.user?.email?.toLowerCase() || "";
+  const isAdmin = await hasAdminClaim(result.user, true);
 
-  if (!isAdminEmail(email)) {
+  if (!isAdmin) {
     await signOut(auth);
-    const err = new Error("Only the site owner is authorized to sign in.");
+    const err = new Error("This account is authenticated but does not have admin access.");
     err.code = "auth/not-admin";
     throw err;
   }

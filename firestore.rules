@@ -33,21 +33,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      let adminEmails = [
-        'haikaltengku836@gmail.com'
-      ];
-
-      let emailBasedAdmin =
-        isAuthenticated() &&
-        request.auth.token.email is string &&
-        request.auth.token.email_verified == true &&
-        request.auth.token.email in adminEmails;
-
-      let claimBasedAdmin =
-        isAuthenticated() &&
-        request.auth.token.admin == true;
-
-      return emailBasedAdmin || claimBasedAdmin;
+      return isAuthenticated() && request.auth.token.admin == true;
     }
 
     function required(fields) {

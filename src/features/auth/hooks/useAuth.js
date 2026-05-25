@@ -1,19 +1,36 @@
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onIdTokenChanged } from "firebase/auth";
 import { auth } from "@/shared/services/firebase/client";
-import { isAdminEmail } from "@/features/auth/constants/adminEmails";
+import { hasAdminClaim } from "@/features/auth/services/authService";
 
 export const useAuth = () => {
   const [user, setUser] = useState(undefined);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (nextUser) => {
+    let alive = true;
+
+    const unsub = onIdTokenChanged(auth, async (nextUser) => {
+      if (!alive) return;
       setUser(nextUser);
-      setIsAdmin(isAdminEmail(nextUser?.email));
+
+      if (!nextUser) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const admin = await hasAdminClaim(nextUser);
+        if (alive) setIsAdmin(admin);
+      } catch {
+        if (alive) setIsAdmin(false);
+      }
     });
 
-    return () => unsub();
+    return () => {
+      alive = false;
+      unsub();
+    };
   }, []);
 
   return {
