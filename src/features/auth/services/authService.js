@@ -1,35 +1,28 @@
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "@/shared/services/firebase/client";
-import { db } from "@/shared/services/firebase/client";
-import { COLLECTIONS } from "@/shared/constants/collections";
-import { doc, getDoc } from "firebase/firestore";
+import { env } from "@/shared/config/env";
 
-export async function hasAdminClaim(user, forceRefresh = false) {
-  if (!user) return false;
-  try {
-    const tokenResult = await user.getIdTokenResult(forceRefresh);
-    return tokenResult?.claims?.admin === true;
-  } catch {
-    return false;
-  }
-}
-
-export async function hasAdminRoleDocument(user) {
-  const uid = user?.uid;
-  if (!uid) return false;
-
-  try {
-    const snap = await getDoc(doc(db, COLLECTIONS.adminUsers, uid));
-    return snap.exists() && snap.data()?.active === true;
-  } catch {
-    return false;
-  }
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
 export async function hasAdminAccess(user, forceRefresh = false) {
-  const hasClaim = await hasAdminClaim(user, forceRefresh);
-  if (hasClaim) return true;
-  return hasAdminRoleDocument(user);
+  if (!user) return false;
+
+  const signedInEmail = normalizeEmail(user.email);
+  const ownerEmail = normalizeEmail(env.ownerAdminEmail);
+
+  if (!signedInEmail || !ownerEmail || signedInEmail !== ownerEmail) {
+    return false;
+  }
+
+  // Ensure we evaluate the latest auth token metadata before allowing admin UI.
+  try {
+    const tokenResult = await user.getIdTokenResult(forceRefresh);
+    return tokenResult?.claims?.email_verified === true || user.emailVerified === true;
+  } catch {
+    return user.emailVerified === true;
+  }
 }
 
 export async function loginWithGooglePopup() {

@@ -32,17 +32,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function ownerEmail() {
+      let localPart = 'haikaltengku836';
+      let domainPart = 'gmail.com';
+      return localPart + '@' + domainPart;
+    }
+
     function isAdmin() {
-      let hasAdminClaim =
-        isAuthenticated() &&
-        request.auth.token.admin == true;
-
-      let hasAdminRoleDoc =
-        isAuthenticated() &&
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
-
-      return hasAdminClaim || hasAdminRoleDoc;
+      return isAuthenticated() &&
+        request.auth.token.email is string &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.email == ownerEmail();
     }
 
     function required(fields) {
@@ -174,11 +174,6 @@ service cloud.firestore {
       allow create: if validTrafficLog();
       allow read: if isAdmin();
       allow update, delete: if false;
-    }
-
-    match /admins/{uid} {
-      allow read: if isAuthenticated() && request.auth.uid == uid;
-      allow write: if false;
     }
 
     match /{document=**} {
