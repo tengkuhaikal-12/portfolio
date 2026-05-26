@@ -1,3 +1,5 @@
+import { getOrCreateVisitorId } from "@/features/visitor-alert/visitorIdentity";
+
 function getDeviceInfo() {
     const ua = navigator.userAgent;
 
@@ -14,7 +16,9 @@ function getDeviceInfo() {
     else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
     else if (ua.includes("Linux")) os = "Linux";
 
-    const deviceType = /Mobi|Android/i.test(ua) ? "mobile" : "desktop";
+    const deviceType = /Mobi|Android|iPhone|iPad/i.test(ua)
+        ? "mobile"
+        : "desktop";
 
     return { browser, os, deviceType };
 }
@@ -27,7 +31,10 @@ export function startVisitorSessionTracking({
     if (window.__visitorSessionTrackerStarted) return;
     window.__visitorSessionTrackerStarted = true;
 
+    const visitorId = getOrCreateVisitorId();
+
     const session = {
+        visitorId,
         identity,
         device: getDeviceInfo(),
         startedAt: new Date().toLocaleString(),
@@ -72,7 +79,25 @@ export function startVisitorSessionTracking({
         }
     }
 
+    async function sendStartAlert() {
+        const payload = {
+            eventType: "session_start",
+            visitorId,
+            identity,
+            device: session.device,
+            path: currentPath,
+            startedAt: session.startedAt,
+        };
+
+        fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        }).catch(() => { });
+    }
+
     pushLocation(currentPath);
+    sendStartAlert();
 
     function trackRouteChange() {
         if (hasSent) return;
@@ -81,7 +106,24 @@ export function startVisitorSessionTracking({
         const now = Date.now();
 
         if (newPath !== currentPath) {
-            saveRoute(currentPath, now - currentStartedAt);
+            const durationMs = now - currentStartedAt;
+
+            saveRoute(currentPath, durationMs);
+
+            fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    eventType: "route_change",
+                    visitorId,
+                    identity,
+                    device: session.device,
+                    fromPath: currentPath,
+                    toPath: newPath,
+                    durationMs,
+                    timestamp: new Date().toLocaleString(),
+                }),
+            }).catch(() => { });
 
             currentPath = newPath;
             currentStartedAt = now;
@@ -103,6 +145,7 @@ export function startVisitorSessionTracking({
 
         const payload = {
             ...session,
+            eventType: "session_end",
             endedAt: new Date().toLocaleString(),
             durationMs: now - session.startedAtMs,
             reason,
@@ -162,4 +205,21 @@ export function startVisitorSessionTracking({
     });
 
     resetIdleTimer();
+
+    return function stopVisitorSessionTracking() {
+        sendSummary("component_unmounted");
+
+        window.__visitorSessionTrackerStarted = false;
+
+        ["click", "scroll", "keydown", "mousemove", "touchstart"].forEach(
+            (eventName) => {
+                window.removeEventListener(eventName, resetIdleTimer);
+            }
+        );
+
+        window.removeEventListener("popstate", trackRouteChange);
+
+        history.pushState = originalPushState;
+        history.replaceState = originalReplaceState;
+    };
 }

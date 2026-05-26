@@ -7,11 +7,17 @@ import "./index.css";
 
 const App = () => {
   useEffect(() => {
-    startVisitorSessionTracking({
+    const stopTracking = startVisitorSessionTracking({
       endpoint: "/.netlify/functions/visitor-alert",
       identity: localStorage.getItem("userEmail") || "Guest / Unknown User",
       idleMs: 5 * 60 * 1000,
     });
+
+    return () => {
+      if (typeof stopTracking === "function") {
+        stopTracking();
+      }
+    };
   }, []);
 
   return (
