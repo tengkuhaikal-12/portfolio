@@ -21,7 +21,7 @@ function getDeviceInfo() {
 
 export function startVisitorSessionTracking({
     endpoint,
-    identity = "Guest / Unknown User",
+    identity = "Guest",
     idleMs = 5 * 60 * 1000,
 }) {
     if (window.__visitorSessionTrackerStarted) return;
@@ -33,12 +33,27 @@ export function startVisitorSessionTracking({
         startedAt: new Date().toLocaleString(),
         startedAtMs: Date.now(),
         routes: [],
+        locationStack: [],
     };
 
     let currentPath = window.location.pathname + window.location.search;
     let currentStartedAt = Date.now();
     let hasSent = false;
     let idleTimer = null;
+
+    function pushLocation(path) {
+        if (!path) return;
+
+        const lastLocation = session.locationStack[session.locationStack.length - 1];
+
+        if (lastLocation?.path === path) return;
+
+        session.locationStack.push({
+            path,
+            enteredAt: new Date().toLocaleString(),
+            enteredAtMs: Date.now(),
+        });
+    }
 
     function saveRoute(path, durationMs) {
         if (!path || durationMs < 1000) return;
@@ -57,6 +72,8 @@ export function startVisitorSessionTracking({
         }
     }
 
+    pushLocation(currentPath);
+
     function trackRouteChange() {
         if (hasSent) return;
 
@@ -65,8 +82,11 @@ export function startVisitorSessionTracking({
 
         if (newPath !== currentPath) {
             saveRoute(currentPath, now - currentStartedAt);
+
             currentPath = newPath;
             currentStartedAt = now;
+
+            pushLocation(newPath);
         }
 
         resetIdleTimer();
