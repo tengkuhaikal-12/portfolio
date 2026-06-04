@@ -64,7 +64,7 @@ const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[200] bg-ink/80 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-[#151513]/90 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -74,36 +74,36 @@ const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
       <div className="relative w-full max-w-5xl">
         <button
           onClick={onClose}
-          className="absolute -top-12 right-0 inline-flex items-center gap-2 text-paper/80 hover:text-paper transition cursor-pointer"
+          className="absolute -top-12 right-0 inline-flex cursor-pointer items-center gap-2 border-2 border-[#fbf8f0] bg-[#ff5a36] p-1 text-[#151513] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
           aria-label="Close"
         >
           <IoCloseOutline size={26} />
         </button>
 
         <div
-          className="relative w-full overflow-hidden border border-paper/10 bg-ink"
+          className="relative w-full overflow-hidden border-2 border-[#fbf8f0] bg-[#151513] shadow-[8px_8px_0_#ff5a36]"
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          <img src={current.src} alt={`Image ${index + 1}`} className="w-full max-h-[78vh] object-contain bg-ink" />
+          <img src={current.src} alt={`Image ${index + 1}`} className="max-h-[78vh] w-full bg-[#151513] object-contain" />
 
           {list.length > 1 ? (
             <>
               <button
                 onClick={prev}
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-paper/10 hover:bg-paper/20 text-paper grid place-items-center transition border border-paper/10"
+                className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[3px_3px_0_#ff5a36] transition hover:bg-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
                 aria-label="Previous image"
               >
                 <IoChevronBackOutline size={22} />
               </button>
               <button
                 onClick={next}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-paper/10 hover:bg-paper/20 text-paper grid place-items-center transition border border-paper/10"
+                className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[3px_3px_0_#ff5a36] transition hover:bg-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
                 aria-label="Next image"
               >
                 <IoChevronForwardOutline size={22} />
               </button>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-ink/60 text-paper text-xs font-black uppercase tracking-widest border border-paper/10">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 border-2 border-[#151513] bg-[#fbf8f0] px-3 py-1.5 text-xs font-black uppercase tracking-widest text-[#151513] shadow-[3px_3px_0_#ff5a36]">
                 {index + 1} / {list.length}
               </div>
             </>

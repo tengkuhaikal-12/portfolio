@@ -6,23 +6,23 @@ const AlertModal = ({ isOpen, title = "Notice", message = "", onClose, primaryLa
 
   return (
     <div
-      className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-ink/70 backdrop-blur-md"
+      className="fixed inset-0 z-[250] flex items-center justify-center bg-[#151513]/80 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose?.();
       }}
     >
-      <div className="ui-surface text-text w-full max-w-md border ui-border shadow-2xl">
-        <div className="flex items-start justify-between gap-4 p-5 border-b ui-border">
+      <div className="w-full max-w-md border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[8px_8px_0_#ff5a36]">
+        <div className="flex items-start justify-between gap-4 border-b-2 border-[#151513] p-5">
           <div>
-            <div className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">Alert</div>
-            <h3 className="mt-1 text-lg font-black">{title}</h3>
+            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">Alert</div>
+            <h3 className="mt-2 font-display text-2xl font-black uppercase tracking-tight">{title}</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-10 h-10 grid place-items-center ui-soft border ui-border hover:opacity-90 transition"
+            className="grid h-10 w-10 place-items-center border-2 border-[#151513] bg-[#f2efe7] shadow-[2px_2px_0_#151513] transition hover:bg-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
             aria-label="Close"
           >
             <IoCloseOutline size={22} />
@@ -30,13 +30,13 @@ const AlertModal = ({ isOpen, title = "Notice", message = "", onClose, primaryLa
         </div>
 
         <div className="p-5">
-          <p className="text-sm ui-muted leading-relaxed whitespace-pre-wrap">{message}</p>
+          <p className="whitespace-pre-wrap text-sm leading-7 text-[#5d5d56]">{message}</p>
 
           <div className="mt-5 flex justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 bg-text text-bg font-black uppercase tracking-widest text-xs hover:opacity-90 transition"
+              className="border-2 border-[#151513] bg-[#ff5a36] px-5 py-3 text-xs font-black uppercase tracking-[0.12em] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
             >
               {primaryLabel}
             </button>
@@ -48,4 +48,3 @@ const AlertModal = ({ isOpen, title = "Notice", message = "", onClose, primaryLa
 };
 
 export default AlertModal;
-

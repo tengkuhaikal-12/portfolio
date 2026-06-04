@@ -12,6 +12,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@eslint/js@^9.39.4",
+        "npm:@fingerprintjs/fingerprintjs@^5.2.0",
         "npm:@tailwindcss/vite@^4.2.2",
         "npm:@types/react-dom@^19.2.3",
         "npm:@types/react@^19.2.14",
@@ -27,14 +28,13 @@
         "npm:nodemailer@^6.9.14",
         "npm:postcss@^8.5.10",
         "npm:puppeteer@^25.0.4",
-        "npm:qrcode-terminal@^0.12.0",
         "npm:react-dom@^19.2.4",
         "npm:react-icons@^5.6.0",
         "npm:react-router-dom@^7.14.1",
         "npm:react@^19.2.4",
         "npm:tailwindcss@^4.2.2",
-        "npm:vite@^8.0.4",
-        "npm:whatsapp-web.js@^1.34.7"
+        "npm:twilio@^6.0.2",
+        "npm:vite@^8.0.4"
       ]
     }
   }

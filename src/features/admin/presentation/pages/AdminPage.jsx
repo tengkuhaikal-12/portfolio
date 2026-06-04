@@ -202,10 +202,11 @@ const AdminPage = () => {
     navigate(ROUTES.home);
   };
 
-  const inputClassNames = "w-full p-3 ui-soft border-2 ui-border focus:border-text outline-none transition";
+  const inputClassNames =
+    "w-full border-2 border-[#151513] bg-[#f2efe7] p-3 outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2";
 
   return (
-    <div className="min-h-screen bg-bg text-text p-4 md:p-10 flex justify-center items-center">
+    <div className="flex min-h-screen items-center justify-center bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] p-4 text-[#151513] md:p-10">
       <AlertModal
         isOpen={alertState.open}
         title={alertState.title}
@@ -213,32 +214,32 @@ const AdminPage = () => {
         onClose={() => setAlertState({ open: false, title: "", message: "" })}
       />
 
-      <div className="max-w-4xl w-full ui-surface border ui-border shadow-2xl overflow-hidden">
-        <div className="bg-ink p-6 text-paper flex justify-between items-center gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold tracking-widest uppercase">Portfolio Manager</h1>
+      <div className="w-full max-w-4xl overflow-hidden border-2 border-[#151513] bg-[#fbf8f0] shadow-[8px_8px_0_#151513]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0]">
+          <h1 className="font-display text-3xl font-black uppercase tracking-tight">Portfolio Manager</h1>
           <div className="flex items-center gap-2">
             <Link
               to={ROUTES.adminAnalytics}
-              className="border border-paper/20 px-4 py-2 text-paper text-sm font-black uppercase tracking-widest"
+              className="border-2 border-[#fbf8f0] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] transition hover:bg-[#ff5a36] hover:text-[#151513]"
             >
               Analytics
             </Link>
             <button
               onClick={handleLogout}
-              className="bg-danger text-paper px-4 py-2 flex items-center gap-2 cursor-pointer hover:opacity-90 transition border border-paper/15"
+              className="flex cursor-pointer items-center gap-2 border-2 border-[#fbf8f0] bg-[#d84833] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] transition hover:-translate-y-0.5"
             >
               <IoPowerOutline size={20} /> Logout
             </button>
           </div>
         </div>
 
-        <div className="flex bg-ink border-t border-paper/10">
+        <div className="flex overflow-x-auto bg-[#242421]">
           {["projects", "experience", "education", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-4 capitalize font-bold transition border-b-4 ${
-                activeTab === tab ? "bg-paper text-ink border-ink" : "text-paper/70 border-transparent hover:text-paper"
+                activeTab === tab ? "border-[#151513] bg-[#ff5a36] text-[#151513]" : "border-transparent text-[#aaa89f] hover:text-[#fbf8f0]"
               }`}
             >
               {tab}
@@ -248,7 +249,7 @@ const AdminPage = () => {
 
         {activeTab === "settings" ? (
           <form onSubmit={handleSettingsSave} className="p-8 space-y-6">
-            <div className="ui-soft border ui-border p-5 space-y-4">
+            <div className="space-y-4 border-2 border-[#151513] bg-[#f2efe7] p-5 shadow-[4px_4px_0_rgba(21,21,19,0.18)]">
               <h2 className="text-lg font-black uppercase tracking-widest">Visitor Alert Settings</h2>
               <p className="text-sm text-text/70">
                 Set the admin WhatsApp number that receives first-visit alerts.
@@ -275,7 +276,7 @@ const AdminPage = () => {
             <button
               disabled={settingsLoading}
               type="submit"
-              className="w-full bg-text text-bg py-4 font-black uppercase tracking-widest hover:opacity-90 transition disabled:opacity-60"
+              className="w-full border-2 border-[#151513] bg-[#ff5a36] py-4 font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-60"
             >
               {settingsLoading ? "Updating..." : "Update WhatsApp Number"}
             </button>
@@ -359,7 +360,7 @@ const AdminPage = () => {
                   />
                   <div className="flex flex-wrap gap-2 mt-3">
                     {techStack.map((tech, index) => (
-                      <span key={`${tech}-${index}`} className="ui-pill border px-3 py-1 text-xs font-bold flex items-center gap-1">
+                      <span key={`${tech}-${index}`} className="flex items-center gap-1 border border-[#151513] bg-[#f2efe7] px-3 py-1 text-xs font-bold">
                         {tech}
                         <button type="button" onClick={() => removeTech(index)} className="text-red-500">
                           x
@@ -384,14 +385,14 @@ const AdminPage = () => {
               <div>
                 <label className="block text-xs font-black text-text/70 uppercase">Media Upload</label>
                 <input type="file" onChange={handleImage} className="text-sm cursor-pointer" />
-                {formData.image ? <img src={formData.image} className="mt-2 h-20 border ui-border" alt="preview" /> : null}
+                {formData.image ? <img src={formData.image} className="mt-2 h-20 border-2 border-[#151513]" alt="preview" /> : null}
               </div>
             </div>
 
             <button
               disabled={loading}
               type="submit"
-              className="md:col-span-2 w-full bg-text text-bg py-4 font-black uppercase tracking-widest hover:opacity-90 transition disabled:opacity-60"
+              className="w-full border-2 border-[#151513] bg-[#ff5a36] py-4 font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-60 md:col-span-2"
             >
               {loading ? "Syncing..." : "Save Entry"}
             </button>

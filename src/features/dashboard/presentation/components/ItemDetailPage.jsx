@@ -35,7 +35,6 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
   const [isSavingGallery, setIsSavingGallery] = useState(false);
   const [removePhotoConfirm, setRemovePhotoConfirm] = useState({ open: false, src: "" });
 
-  const heroRef = useRef(null);
   const galleryFileInputRef = useRef(null);
 
   useEffect(() => {
@@ -64,18 +63,6 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
       isMounted = false;
     };
   }, [collectionName, id]);
-
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const y = window.scrollY || 0;
-      const scale = Math.min(1.08, 1 + y / 2000);
-      el.style.transform = `scale(${scale})`;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const galleryItems = useMemo(() => {
     const raw = item?.gallery || item?.images || item?.imageGallery || [];
@@ -267,19 +254,19 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-bg text-text font-body">
+      <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513]">
         <Navbar />
-        <div className="max-w-4xl mx-auto px-6 pt-32 pb-16">
+        <div className="mx-auto max-w-4xl px-6 pb-20 pt-32">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest ui-muted hover:opacity-100 opacity-80 transition cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-2 border-2 border-[#151513] bg-[#fbf8f0] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
           >
             <IoArrowBackOutline /> Back
           </button>
-          <div className="mt-10 p-8 ui-surface border ui-border shadow-[8px_8px_0px_0px_rgba(20,20,22,1)] dark:shadow-[8px_8px_0px_0px_rgba(247,244,234,0.12)]">
-            <p className="text-xl font-black">Not found</p>
-            <p className="mt-2 text-sm ui-muted">This {kindLabel.toLowerCase()} does not exist (or was removed).</p>
-            <Link to="/" className="mt-6 inline-flex items-center gap-2 px-5 py-3 bg-text text-bg font-black uppercase tracking-widest hover:opacity-90 transition">
+          <div className="mt-10 border-2 border-[#151513] bg-[#fbf8f0] p-8 shadow-[8px_8px_0_#151513]">
+            <p className="font-display text-3xl font-black uppercase tracking-tight">Not found</p>
+            <p className="mt-3 text-sm text-[#5d5d56]">This {kindLabel.toLowerCase()} does not exist (or was removed).</p>
+            <Link to="/" className="mt-7 inline-flex items-center gap-2 border-2 border-[#151513] bg-[#ff5a36] px-5 py-3 text-xs font-black uppercase tracking-[0.12em] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]">
               Go home
             </Link>
           </div>
@@ -296,31 +283,33 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
   const tags = collectionName === "projects" ? item?.techStack || item?.tags || [] : item?.tags || [];
 
   return (
-    <div className="min-h-screen bg-bg text-text font-body">
+    <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513] selection:bg-[#ff5a36]">
       <Navbar />
 
       {/* HERO */}
-      <section className="pt-24">
-        <div className="relative w-full h-[44vh] md:h-[54vh] overflow-hidden">
+      <section className="border-b-2 border-[#151513] bg-[#242421] px-4 pb-10 pt-24 sm:px-6 sm:pb-14 sm:pt-28">
+        <div className="relative mx-auto h-[44vh] w-full max-w-7xl overflow-hidden border-2 border-[#151513] shadow-[8px_8px_0_#ff5a36] md:h-[58vh]">
           {item?.image ? (
             <img
-              ref={heroRef}
               src={item.image}
               alt={title}
-              className="absolute inset-0 w-full h-full object-cover will-change-transform transition-transform duration-300"
+              className="absolute inset-0 h-full w-full object-cover grayscale transition duration-300 hover:scale-[1.02] hover:grayscale-0"
               loading="eager"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-bg via-[#FFF7D6] to-bg" />
+            <div className="absolute inset-0 bg-[#34342f]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/20 to-transparent" />
-          <div className="absolute inset-0 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#151513]/85 via-[#151513]/15 to-transparent" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:38px_38px]" />
+          <div className="absolute left-5 top-5 border-2 border-[#151513] bg-[#ff5a36] px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_#151513]">
+            {kindLabel}
+          </div>
 
           <div className="absolute bottom-0 left-0 right-0">
-            <div className="max-w-6xl mx-auto px-6 pb-10">
+            <div className="mx-auto max-w-7xl px-5 pb-6 sm:px-8 sm:pb-8">
               <button
                 onClick={() => navigate(-1)}
-                className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest ui-muted hover:opacity-100 opacity-80 transition cursor-pointer"
+                className="inline-flex cursor-pointer items-center gap-2 border-2 border-[#fbf8f0] bg-[#151513] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] shadow-[3px_3px_0_#ff5a36] transition hover:bg-[#ff5a36] hover:text-[#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
               >
                 <IoArrowBackOutline /> Back
               </button>
@@ -330,17 +319,18 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
       </section>
 
       {/* MAIN INFO */}
-      <section className="max-w-6xl mx-auto px-6 mt-8 md:mt-10 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div className="md:col-span-8 ui-surface border ui-border overflow-hidden">
-            <div className="p-6 md:p-8">
-              <h1 className="text-2xl md:text-3xl font-black leading-tight break-words">{title}</h1>
-              {subtitle ? <p className="mt-2 ui-muted font-black">{subtitle}</p> : null}
+      <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 md:mt-14">
+        <div className="grid grid-cols-1 gap-7 md:grid-cols-12">
+          <div className="overflow-hidden border-2 border-[#151513] bg-[#fbf8f0] shadow-[6px_6px_0_#151513] md:col-span-8">
+            <div className="p-6 md:p-9">
+              <p className="mb-5 text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">{kindLabel} / Overview</p>
+              <h1 className="break-words font-display text-[clamp(2.8rem,7vw,5.5rem)] font-black uppercase leading-[0.85] tracking-[-0.06em]">{title}</h1>
+              {subtitle ? <p className="mt-5 border-l-4 border-[#ff5a36] pl-4 text-sm font-black uppercase tracking-[0.1em] text-[#5d5d56]">{subtitle}</p> : null}
               {item?.shortDescription ? (
-                <p className="mt-4 text-sm md:text-base ui-muted leading-relaxed">{item.shortDescription}</p>
+                <p className="mt-5 text-sm leading-7 text-[#5d5d56] md:text-base">{item.shortDescription}</p>
               ) : null}
 
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mt-7 grid grid-cols-1 gap-4 border-t-2 border-[#151513] pt-6 sm:grid-cols-2">
                 {duration ? (
                   <MetaRow icon={<IoCalendarOutline />} label="Date" value={duration} />
                 ) : null}
@@ -350,14 +340,14 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 
               {Array.isArray(tags) && tags.length ? (
                 <div className="mt-6">
-                  <p className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80 mb-2">
+                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
                     Tech stack
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {tags.map((tag) => (
                       <span
                         key={tag}
-                        className="px-3 py-1 text-[10px] font-black uppercase tracking-wider ui-pill border"
+                        className="border border-[#151513] bg-[#f2efe7] px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em]"
                       >
                         {tag}
                       </span>
@@ -368,10 +358,10 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
             </div>
           </div>
 
-          <div className="md:col-span-4 space-y-4">
-            <div className="md:col-span-4 space-y-4">
-              <div className="ui-surface border ui-border p-6 h-full">
-                <p className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">
+          <div className="space-y-4 md:col-span-4">
+            <div className="space-y-4">
+              <div className="h-full border-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0] shadow-[6px_6px_0_#ff5a36]">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">
                   Actions
                 </p>
 
@@ -390,7 +380,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                           }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-between gap-3 w-full px-4 py-3 border ui-border ui-action font-black text-sm hover:opacity-90 transition"
+                          className="flex w-full items-center justify-between gap-3 border-2 border-[#77756e] bg-[#2e2e2a] px-4 py-3 text-sm font-black transition hover:-translate-y-0.5 hover:border-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             {isGithub ? (
@@ -404,7 +394,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                                 {action.label}
                               </p>
 
-                              <p className="text-[10px] ui-muted font-normal truncate">
+                              <p className="truncate text-[10px] font-normal text-[#aaa89f]">
                                 {action.href}
                               </p>
                             </div>
@@ -414,7 +404,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                       );
                     })
                   ) : (
-                    <div className="text-sm ui-muted">
+                    <div className="text-sm text-[#aaa89f]">
                       No links available.
                     </div>
                   )}
@@ -422,7 +412,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                   {isAdmin ? (
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="mt-2 inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-text text-bg font-black tracking-widest hover:opacity-90 transition"
+                      className="mt-2 inline-flex w-full items-center justify-center gap-2 border-2 border-[#151513] bg-[#ff5a36] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#fbf8f0] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
                     >
                       <IoPencilOutline /> Edit
                     </button>
@@ -435,9 +425,12 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
       </section>
 
       {/* DETAILS */}
-      <section className="max-w-6xl mx-auto px-6 mt-10 md:mt-14">
-        <div className="ui-surface border ui-border p-6 md:p-10">
-          <h2 className="text-xl md:text-2xl font-black">Details</h2>
+      <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 md:mt-16">
+        <div className="border-2 border-[#151513] bg-[#fbf8f0] p-6 shadow-[6px_6px_0_rgba(21,21,19,0.18)] md:p-10">
+          <div className="flex items-end gap-4 border-b-2 border-[#151513] pb-5">
+            <span className="font-serif text-2xl font-black italic text-[#ff5a36]">01</span>
+            <h2 className="font-display text-4xl font-black uppercase leading-none tracking-[-0.05em] md:text-6xl">Details</h2>
+          </div>
           <div className="mt-6 space-y-6">
             <RichBlocks blocks={formattedDescription} />
           </div>
@@ -446,16 +439,19 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 
       {/* GALLERY */}
       {galleryItems.length || isAdmin ? (
-        <section className="max-w-6xl mx-auto px-6 mt-10 md:mt-14 pb-16">
-          <div className="ui-surface border ui-border p-6 md:p-10">
-            <div className="flex items-center justify-between gap-4">
+        <section className="mx-auto mt-12 max-w-7xl px-4 pb-20 sm:px-6 md:mt-16">
+          <div className="border-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0] shadow-[6px_6px_0_#ff5a36] md:p-10">
+            <div className="flex items-end justify-between gap-4 border-b-2 border-[#77756e] pb-5">
               <div>
-                <h2 className="text-xl md:text-2xl font-black">Gallery</h2>
+                <div className="flex items-end gap-4">
+                  <span className="font-serif text-2xl font-black italic text-[#ff5a36]">02</span>
+                  <h2 className="font-display text-4xl font-black uppercase leading-none tracking-[-0.05em] md:text-6xl">Gallery</h2>
+                </div>
               </div>
-              <p className="text-xs font-black uppercase tracking-widest ui-muted opacity-80">{galleryItems.length} photos</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#aaa89f]">{galleryItems.length} photos</p>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+            <div className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-4">
               {isAdmin ? (
                 <>
                   <input
@@ -470,28 +466,28 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                     type="button"
                     onClick={onPickGalleryFiles}
                     disabled={isUploadingGallery || isSavingGallery}
-                    className="group relative aspect-square overflow-hidden border ui-border ui-soft grid place-items-center focus:outline-none focus:ring-2 focus:ring-text disabled:opacity-70"
+                    className="group relative grid aspect-square place-items-center overflow-hidden border-2 border-[#77756e] bg-[#2e2e2a] transition hover:border-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] disabled:opacity-70"
                     aria-label="Upload gallery images"
                     title="Upload gallery images"
                   >
                     <div className="grid place-items-center text-center px-4">
-                      <div className="w-12 h-12 ui-badge grid place-items-center mb-3">
+                      <div className="mb-3 grid h-12 w-12 place-items-center border-2 border-[#fbf8f0] bg-[#ff5a36] text-[#151513] shadow-[3px_3px_0_#fbf8f0]">
                         <IoAddOutline size={22} />
                       </div>
                       <div className="text-xs font-black uppercase tracking-widest">
                         {isUploadingGallery ? "Uploading..." : isSavingGallery ? "Saving..." : "Add photos"}
                       </div>
-                      <div className="mt-1 text-[11px] ui-muted opacity-80">PNG/JPG/WebP</div>
+                      <div className="mt-1 text-[10px] text-[#aaa89f]">PNG/JPG/WebP</div>
                     </div>
-                    <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/10 transition" />
+                    <div className="absolute inset-0 bg-[#151513]/0 transition group-hover:bg-[#151513]/10" />
                   </button>
                 </>
               ) : null}
               {galleryItems.map((g, idx) => (
-                <div key={g.src} className="group relative aspect-square overflow-hidden border ui-border">
+                <div key={g.src} className="group relative aspect-square overflow-hidden border-2 border-[#77756e] transition hover:-translate-y-1 hover:border-[#ff5a36]">
                   <button
                     onClick={() => openLightbox(idx)}
-                    className="absolute inset-0 w-full h-full focus:outline-none focus:ring-2 focus:ring-text"
+                    className="absolute inset-0 h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
                     aria-label={`Open image ${idx + 1}`}
                     type="button"
                   >
@@ -501,8 +497,8 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/25 transition" />
-                    <div className="absolute bottom-2 right-2 w-9 h-9 ui-badge grid place-items-center opacity-0 group-hover:opacity-100 transition">
+                    <div className="absolute inset-0 bg-[#151513]/0 transition group-hover:bg-[#151513]/25" />
+                    <div className="absolute bottom-2 right-2 grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] opacity-0 shadow-[2px_2px_0_#ff5a36] transition group-hover:opacity-100">
                       <IoOpenOutline />
                     </div>
                   </button>
@@ -515,7 +511,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                         e.stopPropagation();
                         openGalleryLink(g.href);
                       }}
-                      className="absolute top-2 left-2 w-9 h-9 ui-badge grid place-items-center opacity-0 group-hover:opacity-100 transition"
+                      className="absolute left-2 top-2 grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] opacity-0 shadow-[2px_2px_0_#ff5a36] transition group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
                       aria-label="Open project link"
                       title="Open project link"
                     >
@@ -533,7 +529,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                           onEditGalleryLink(g.src);
                         }}
                         disabled={isSavingGallery}
-                        className="w-9 h-9 ui-badge grid place-items-center disabled:opacity-60"
+                        className="grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[2px_2px_0_#ff5a36] disabled:opacity-60"
                         aria-label="Edit project link"
                         title="Edit project link"
                       >
@@ -547,7 +543,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                           onRemoveGalleryItem(g.src);
                         }}
                         disabled={isSavingGallery}
-                        className="w-9 h-9 ui-badge grid place-items-center disabled:opacity-60"
+                        className="grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[2px_2px_0_#ff5a36] disabled:opacity-60"
                         aria-label="Remove photo"
                         title="Remove photo"
                       >
@@ -559,9 +555,9 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
               ))}
             </div>
 
-            {galleryUploadError ? <p className="mt-4 text-sm text-red-500 font-black">{galleryUploadError}</p> : null}
+            {galleryUploadError ? <p className="mt-4 border-l-4 border-[#d84833] pl-3 text-sm font-black text-[#ff8065]">{galleryUploadError}</p> : null}
             {!galleryItems.length && !isUploadingGallery ? (
-              <p className="mt-4 text-sm ui-muted">No photos yet.</p>
+              <p className="mt-4 text-sm text-[#aaa89f]">No photos yet.</p>
             ) : null}
           </div>
         </section>
@@ -605,17 +601,17 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 };
 
 const MetaRow = ({ icon, label, value }) => (
-  <div className="flex items-start gap-3">
-    <div className="mt-[2px] ui-muted opacity-80">{icon}</div>
+  <div className="flex items-start gap-3 border-2 border-[#151513] bg-[#f2efe7] p-4">
+    <div className="mt-[2px] text-[#ff5a36]">{icon}</div>
 
     <div>
-      <div className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">
+      <div className="text-[9px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
         {label}
       </div>
 
       <div className="mt-1 text-sm font-black">
         {value} {" "}{value?.toLowerCase().includes("present") && (
-          <p className="mt-1 text-xs text-orange-400/80">
+          <p className="mt-1 text-xs text-[#ff5a36]">
             In progress
           </p>
         )}
@@ -623,20 +619,6 @@ const MetaRow = ({ icon, label, value }) => (
     </div>
   </div>
 );
-
-const ActionButton = ({ href, kind, label }) => {
-  const Icon = kind === "github" ? FaGithub : IoOpenOutline;
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 ui-action border font-black uppercase tracking-widest text-xs transition"
-    >
-      <Icon /> {label}
-    </a>
-  );
-};
 
 function normalizeRichText(text) {
   const lines = text
@@ -708,14 +690,14 @@ const RichBlocks = ({ blocks }) => {
   return blocks.map((b, idx) => {
     if (b.type === "p") {
       return (
-        <p key={idx} className="text-sm md:text-base ui-muted leading-relaxed">
+        <p key={idx} className="text-sm leading-7 text-[#5d5d56] md:text-base">
           {b.text}
         </p>
       );
     }
     if (b.type === "ul") {
       return (
-        <ul key={idx} className="list-disc pl-5 space-y-2 text-sm md:text-base ui-muted">
+        <ul key={idx} className="list-disc space-y-2 pl-5 text-sm leading-7 text-[#5d5d56] md:text-base">
           {b.items.map((it) => (
             <li key={it}>{it}</li>
           ))}
@@ -724,8 +706,8 @@ const RichBlocks = ({ blocks }) => {
     }
     if (b.type === "section") {
       return (
-        <div key={idx} className="border ui-border ui-highlight p-5 md:p-6">
-          <div className="text-[11px] font-black uppercase tracking-widest ui-muted opacity-80">{b.title}</div>
+        <div key={idx} className="border-2 border-[#151513] bg-[#f2efe7] p-5 shadow-[3px_3px_0_rgba(21,21,19,0.18)] md:p-6">
+          <div className="text-[10px] font-black uppercase tracking-[0.14em] text-[#ff5a36]">{b.title}</div>
           <div className="mt-3 space-y-4">
             <RichBlocks blocks={b.blocks} />
           </div>
@@ -739,51 +721,51 @@ const RichBlocks = ({ blocks }) => {
 export default ItemDetailPage;
 
 const DetailSkeleton = () => (
-  <div className="min-h-screen bg-bg text-text font-body">
+  <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513]">
     <Navbar />
     <div className="pt-24">
-      <div className="relative w-full h-[44vh] md:h-[54vh] overflow-hidden ui-soft animate-pulse" />
+      <div className="relative h-[44vh] w-full animate-pulse overflow-hidden bg-[#34342f] md:h-[54vh]" />
     </div>
-    <div className="max-w-6xl mx-auto px-6 mt-8 md:mt-10 relative z-10">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <div className="md:col-span-8 border ui-border ui-surface   p-8">
-          <div className="h-6 w-2/3 ui-soft animate-pulse" />
-          <div className="mt-4 h-4 w-full ui-soft animate-pulse" />
-          <div className="mt-2 h-4 w-5/6 ui-soft animate-pulse" />
+    <div className="relative z-10 mx-auto mt-8 max-w-6xl px-6 md:mt-10">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+        <div className="border-2 border-[#151513] bg-[#fbf8f0] p-8 shadow-[6px_6px_0_#151513] md:col-span-8">
+          <div className="h-6 w-2/3 animate-pulse bg-[#d7d3c8]" />
+          <div className="mt-4 h-4 w-full animate-pulse bg-[#d7d3c8]" />
+          <div className="mt-2 h-4 w-5/6 animate-pulse bg-[#d7d3c8]" />
           <div className="mt-8 grid grid-cols-2 gap-4">
-            <div className="h-10 ui-soft animate-pulse" />
-            <div className="h-10 ui-soft animate-pulse" />
-            <div className="h-10 ui-soft animate-pulse" />
-            <div className="h-10 ui-soft animate-pulse" />
+            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
+            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
+            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
+            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
           </div>
         </div>
-        <div className="md:col-span-4 space-y-4">
-          <div className="border ui-border ui-surface   p-6">
-            <div className="h-4 w-24 ui-soft animate-pulse" />
+        <div className="space-y-4 md:col-span-4">
+          <div className="border-2 border-[#151513] bg-[#242421] p-6 shadow-[6px_6px_0_#ff5a36]">
+            <div className="h-4 w-24 animate-pulse bg-[#56554f]" />
             <div className="mt-4 space-y-2">
-              <div className="h-10 ui-soft animate-pulse" />
-              <div className="h-10 ui-soft animate-pulse" />
-              <div className="h-10 ui-soft animate-pulse" />
+              <div className="h-10 animate-pulse bg-[#56554f]" />
+              <div className="h-10 animate-pulse bg-[#56554f]" />
+              <div className="h-10 animate-pulse bg-[#56554f]" />
             </div>
           </div>
-          <div className="border ui-border ui-surface   p-6">
-            <div className="h-4 w-28 ui-soft animate-pulse" />
+          <div className="border-2 border-[#151513] bg-[#fbf8f0] p-6">
+            <div className="h-4 w-28 animate-pulse bg-[#d7d3c8]" />
             <div className="mt-4 space-y-2">
-              <div className="h-4 w-full ui-soft animate-pulse" />
-              <div className="h-4 w-11/12 ui-soft animate-pulse" />
-              <div className="h-4 w-10/12 ui-soft animate-pulse" />
+              <div className="h-4 w-full animate-pulse bg-[#d7d3c8]" />
+              <div className="h-4 w-11/12 animate-pulse bg-[#d7d3c8]" />
+              <div className="h-4 w-10/12 animate-pulse bg-[#d7d3c8]" />
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div className="max-w-6xl mx-auto px-6 mt-10 pb-16">
-      <div className="border ui-border ui-surface   p-10">
-        <div className="h-6 w-36 ui-soft animate-pulse" />
+    <div className="mx-auto mt-10 max-w-6xl px-6 pb-16">
+      <div className="border-2 border-[#151513] bg-[#fbf8f0] p-10">
+        <div className="h-6 w-36 animate-pulse bg-[#d7d3c8]" />
         <div className="mt-6 space-y-3">
-          <div className="h-4 w-full ui-soft animate-pulse" />
-          <div className="h-4 w-11/12 ui-soft animate-pulse" />
-          <div className="h-4 w-10/12 ui-soft animate-pulse" />
+          <div className="h-4 w-full animate-pulse bg-[#d7d3c8]" />
+          <div className="h-4 w-11/12 animate-pulse bg-[#d7d3c8]" />
+          <div className="h-4 w-10/12 animate-pulse bg-[#d7d3c8]" />
         </div>
       </div>
     </div>

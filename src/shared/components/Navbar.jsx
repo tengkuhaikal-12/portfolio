@@ -31,10 +31,10 @@ const Navbar = () => {
   }, [location]);
 
   const linkClass =
-    "text-sm ui-navlink hover:bg-text hover:text-bg focus:bg-text focus:text-bg focus:outline-none px-4 py-1.5 rounded-full transition font-medium";
+    "relative px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#151513] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:bg-[#ff5a36] after:transition-transform hover:after:origin-left hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f2efe7]";
 
   const mobileLinkClass =
-    "w-full text-left ui-navlink hover:bg-text hover:text-bg focus:bg-text focus:text-bg focus:outline-none rounded-full px-4 py-2.5 transition font-medium";
+    "w-full border-2 border-[#151513] bg-[#fbf8f0] px-4 py-3 text-left text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#151513] transition hover:-translate-y-0.5 hover:bg-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2";
 
   const NavItem = ({ link, mobile = false }) => {
     const className = mobile ? mobileLinkClass : linkClass;
@@ -55,14 +55,25 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-5xl">
-      <div className="ui-nav border shadow-md backdrop-blur-lg overflow-hidden rounded-[28px] md:rounded-full">
-        <div className="flex items-center justify-between pl-5 pr-2 py-2">
-          <Link to="/" onClick={() => setIsOpen(false)}>
-            <img src="/haikal-logo.svg" alt="logo" className="h-9 cursor-pointer" />
+    <nav className="fixed inset-x-0 top-0 z-50 border-b-2 border-[#151513] bg-[#f2efe7]/95 text-[#151513] backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6">
+        <div className="flex min-h-16 items-center justify-between gap-4">
+          <Link
+            to="/"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2"
+            aria-label="Tengku Haikal home"
+          >
+            <span className="grid place-items-center">
+              <img src="/haikal-logo.svg" alt="" className="h-7 w-7 object-contain" />
+            </span>
+            <span className="hidden text-[11px] font-black uppercase leading-tight tracking-[0.14em] sm:block">
+              Tengku Haikal
+              <span className="block text-[#5d5d56]">Portfolio / 2026</span>
+            </span>
           </Link>
 
-          <div className="hidden md:flex gap-1 items-center">
+          <div className="hidden items-center gap-2 border-x border-[#d7d3c8] px-3 md:flex">
             {navLinks.map((link) => (
               <NavItem key={link.id} link={link} />
             ))}
@@ -70,8 +81,9 @@ const Navbar = () => {
 
           <button
             onClick={() => setIsOpen((prev) => !prev)}
-            className="md:hidden relative w-9 h-9 flex items-center justify-center cursor-pointer mr-1 rounded-full hover:bg-text hover:text-bg focus:bg-text focus:text-bg focus:outline-none transition"
+            className="relative mr-1 flex h-10 w-10 cursor-pointer items-center justify-center border-2 border-[#151513] bg-[#fbf8f0] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2 md:hidden"
             aria-label="Toggle menu"
+            aria-expanded={isOpen}
           >
             <span
               className={`absolute w-5 h-[2px] bg-current transition duration-300 ${
@@ -88,12 +100,12 @@ const Navbar = () => {
         </div>
 
         <div
-          className={`md:hidden grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`grid transition-[grid-template-rows,opacity] duration-300 md:hidden ${
             isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
           }`}
         >
           <div className="overflow-hidden">
-            <div className="flex flex-col gap-2 px-4 pt-3 pb-4">
+            <div className="flex flex-col gap-3 border-t-2 border-[#151513] px-1 py-4">
               {navLinks.map((link) => (
                 <NavItem key={link.id} link={link} mobile />
               ))}

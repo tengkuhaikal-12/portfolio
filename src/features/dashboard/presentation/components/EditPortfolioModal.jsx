@@ -107,7 +107,8 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
 
   if (!isOpen || !data) return null;
 
-  const inputClass = "w-full p-3 ui-soft border-2 ui-border focus:border-text outline-none transition text-sm";
+  const inputClass =
+    "w-full border-2 border-[#151513] bg-[#f2efe7] p-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2";
 
   const handleAddTech = (event) => {
     if (event.key !== "Enter" && event.key !== ",") return;
@@ -176,7 +177,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/70 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#151513]/80 p-4 backdrop-blur-sm">
       <AlertModal
         isOpen={alertState.open}
         title={alertState.title}
@@ -198,14 +199,14 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
         }}
       />
 
-      <div className="ui-surface text-text w-full max-w-4xl shadow-2xl overflow-y-auto max-h-[90vh] border ui-border">
-        <div className="bg-ink p-6 text-paper flex justify-between items-center sticky top-0 z-10 border-b border-paper/10">
-          <h2 className="text-xl font-bold uppercase tracking-widest">Edit {collectionName}</h2>
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[8px_8px_0_#ff5a36]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0]">
+          <h2 className="font-display text-2xl font-black uppercase tracking-tight">Edit {collectionName}</h2>
           <button
             type="button"
             onClick={requestClose}
             disabled={loading}
-            className="hover:text-red-400 transition cursor-pointer disabled:opacity-60"
+            className="cursor-pointer border-2 border-[#fbf8f0] bg-[#ff5a36] p-1 text-[#151513] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] disabled:opacity-60"
           >
             <IoCloseOutline size={32} />
           </button>
@@ -214,7 +215,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
         <form onSubmit={handleSubmit} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Title</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Title</label>
               <input
                 required
                 className={inputClass}
@@ -224,7 +225,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div>
-              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Subtitle / Role</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Subtitle / Role</label>
               <input
                 required
                 className={inputClass}
@@ -234,7 +235,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div className="space-y-4">
-              <label className="text-xs font-black uppercase ui-muted opacity-80 block">Duration</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Duration</label>
               <div className="grid grid-cols-2 gap-2">
                 <select className={inputClass} value={startMonth} onChange={(event) => setStartMonth(event.target.value)}>
                   {MONTHS.map((month) => (
@@ -281,7 +282,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
           <div className="space-y-4">
             {collectionName === "projects" ? (
               <div>
-                <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Tech Stack (Enter to add)</label>
+                <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Tech Stack (Enter to add)</label>
                 <input
                   className={inputClass}
                   value={techInput}
@@ -290,7 +291,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                 />
                 <div className="flex flex-wrap gap-2 mt-2">
                   {techStack.map((tech, index) => (
-                    <span key={`${tech}-${index}`} className="ui-pill border px-2 py-1 text-[10px] font-bold">
+                    <span key={`${tech}-${index}`} className="border border-[#151513] bg-[#f2efe7] px-2 py-1 text-[10px] font-bold">
                       {tech}
                       <button type="button" onClick={() => removeTech(index)} className="ml-1 text-red-500">
                         x
@@ -302,7 +303,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             ) : null}
 
             <div>
-              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Description</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Description</label>
               <textarea
                 rows="4"
                 className={inputClass}
@@ -312,10 +313,10 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div>
-              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-2 block">Links</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Links</label>
               <div className="space-y-3">
                 {(formData.links || []).map((link, index) => (
-                  <div key={`${link?.href || "link"}-${index}`} className="border ui-border p-3 rounded-xl space-y-2">
+                  <div key={`${link?.href || "link"}-${index}`} className="space-y-2 border-2 border-[#151513] bg-[#f2efe7] p-3">
                     <input
                       className={inputClass}
                       placeholder="Label (GitHub, Website, Demo...)"
@@ -354,7 +355,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                         const links = (formData.links || []).filter((_, itemIndex) => itemIndex !== index);
                         setFormData((current) => ({ ...current, links }));
                       }}
-                      className="text-sm text-red-400"
+                      className="text-sm font-black uppercase text-[#d84833] underline decoration-2 underline-offset-4"
                     >
                       Remove
                     </button>
@@ -367,7 +368,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                     const links = [...(formData.links || []), { label: "", href: "", kind: "visit" }];
                     setFormData((current) => ({ ...current, links }));
                   }}
-                  className="w-full py-3 border ui-border font-black text-sm"
+                  className="w-full border-2 border-[#151513] bg-[#f2efe7] py-3 text-sm font-black uppercase tracking-[0.1em] shadow-[3px_3px_0_#151513] transition hover:bg-[#ff5a36]"
                 >
                   Add Link
                 </button>
@@ -375,16 +376,16 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div>
-              <label className="text-xs font-black uppercase ui-muted opacity-80 mb-1 block">Update Image</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Update Image</label>
               <input type="file" onChange={handleImage} className="text-xs cursor-pointer block w-full" />
-              {formData.image ? <img src={formData.image} className="mt-2 h-16 border ui-border" alt="preview" /> : null}
+              {formData.image ? <img src={formData.image} className="mt-2 h-16 border-2 border-[#151513]" alt="preview" /> : null}
             </div>
           </div>
 
           <button
             disabled={loading}
             type="submit"
-            className="md:col-span-2 w-full bg-text text-bg py-4 font-black uppercase tracking-widest hover:opacity-90 transition disabled:opacity-60 shadow-xl"
+            className="w-full border-2 border-[#151513] bg-[#ff5a36] py-4 font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] disabled:opacity-60 md:col-span-2"
           >
             {loading ? "Saving changes..." : "Update portfolio"}
           </button>
