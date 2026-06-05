@@ -219,8 +219,14 @@ const AdminPage = () => {
           <h1 className="font-display text-3xl font-black uppercase tracking-tight">Portfolio Manager</h1>
           <div className="flex items-center gap-2">
             <Link
+              to={ROUTES.home}
+              className="border-2 border-[#fbf8f0] bg-[#fbf8f0] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#ff5a36] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_#ff5a36]"
+            >
+              Go Home
+            </Link>
+            <Link
               to={ROUTES.adminAnalytics}
-              className="border-2 border-[#fbf8f0] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] transition hover:bg-[#ff5a36] hover:text-[#151513]"
+              className="border-2 border-[#fbf8f0] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] shadow-[3px_3px_0_#ff5a36] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[#ff5a36] hover:text-[#151513] hover:shadow-[1px_1px_0_#ff5a36]"
             >
               Analytics
             </Link>

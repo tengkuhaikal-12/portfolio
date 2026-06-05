@@ -8,6 +8,24 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 15 }, (_, index) => currentYear - index);
+const DEFAULT_IMAGE_POSITION = "50% 50%";
+
+const parseImagePosition = (position = DEFAULT_IMAGE_POSITION) => {
+  const [x = "50%", y = "50%"] = String(position).split(" ");
+  return {
+    x: Number.parseInt(x, 10) || 50,
+    y: Number.parseInt(y, 10) || 50,
+  };
+};
+
+const formatImagePosition = (x, y) => `${x}% ${y}%`;
+
+const focalPresets = [
+  { label: "Top", value: "50% 0%" },
+  { label: "Head", value: "50% 18%" },
+  { label: "Center", value: DEFAULT_IMAGE_POSITION },
+  { label: "Bottom", value: "50% 100%" },
+];
 
 const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuccess }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +33,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
     subtitle: "",
     description: "",
     image: "",
+    imagePosition: DEFAULT_IMAGE_POSITION,
     links: [],
   });
 
@@ -39,6 +58,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
       subtitle: data.subtitle || "",
       description: data.description || "",
       image: data.image || "",
+      imagePosition: data.imagePosition || DEFAULT_IMAGE_POSITION,
       links: Array.isArray(data.links) ? data.links : [],
     };
 
@@ -109,6 +129,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
 
   const inputClass =
     "w-full border-2 border-[#151513] bg-[#f2efe7] p-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2";
+  const imagePosition = parseImagePosition(formData.imagePosition);
 
   const handleAddTech = (event) => {
     if (event.key !== "Enter" && event.key !== ",") return;
@@ -135,6 +156,16 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => setFormData((current) => ({ ...current, image: reader.result }));
+  };
+
+  const updateImagePosition = (axis, value) => {
+    const nextValue = Number.parseInt(value, 10);
+    setFormData((current) => {
+      const currentPosition = parseImagePosition(current.imagePosition);
+      const nextX = axis === "x" ? nextValue : currentPosition.x;
+      const nextY = axis === "y" ? nextValue : currentPosition.y;
+      return { ...current, imagePosition: formatImagePosition(nextX, nextY) };
+    });
   };
 
   const requestClose = () => {
@@ -378,7 +409,69 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             <div>
               <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Update Image</label>
               <input type="file" onChange={handleImage} className="text-xs cursor-pointer block w-full" />
-              {formData.image ? <img src={formData.image} className="mt-2 h-16 border-2 border-[#151513]" alt="preview" /> : null}
+              {formData.image ? (
+                <div className="mt-4 space-y-4 border-2 border-[#151513] bg-[#f2efe7] p-4 shadow-[4px_4px_0_#151513]">
+                  <div className="overflow-hidden border-2 border-[#151513] bg-[#242421]">
+                    <img
+                      src={formData.image}
+                      className="h-48 w-full object-cover grayscale"
+                      style={{ objectPosition: formData.imagePosition }}
+                      alt="preview"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+                        Image focus
+                      </label>
+                      <span className="border border-[#151513] bg-[#fbf8f0] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#5d5d56]">
+                        {formData.imagePosition}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {focalPresets.map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => setFormData((current) => ({ ...current, imagePosition: preset.value }))}
+                          className={`border-2 border-[#151513] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] shadow-[2px_2px_0_#151513] transition hover:bg-[#ff5a36] ${
+                            formData.imagePosition === preset.value ? "bg-[#ff5a36]" : "bg-[#fbf8f0]"
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+                      Move left / right
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={imagePosition.x}
+                      onChange={(event) => updateImagePosition("x", event.target.value)}
+                      className="w-full accent-[#ff5a36]"
+                    />
+                    <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+                      Move up / down
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={imagePosition.y}
+                      onChange={(event) => updateImagePosition("y", event.target.value)}
+                      className="w-full accent-[#ff5a36]"
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
 

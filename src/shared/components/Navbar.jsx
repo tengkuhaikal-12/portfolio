@@ -54,9 +54,9 @@ const Navbar = () => {
     );
   };
 
-  return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b-2 border-[#151513] bg-[#f2efe7]/95 text-[#151513] backdrop-blur-md">
-      <div className="mx-auto max-w-7xl px-3 sm:px-6">
+    return (
+    <nav className="fixed left-0 right-0 top-4 z-50 px-3 text-[#151513]">
+      <div className="mx-auto max-w-7xl border-2 border-[#151513] bg-[#f2efe7]/95 px-4 backdrop-blur-md sm:px-6">
         <div className="flex min-h-16 items-center justify-between gap-4">
           <Link
             to="/"
@@ -64,12 +64,15 @@ const Navbar = () => {
             className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2"
             aria-label="Tengku Haikal home"
           >
-            <span className="grid place-items-center">
-              <img src="/haikal-logo.svg" alt="" className="h-7 w-7 object-contain" />
-            </span>
+            <img
+              src="/haikal-logo.svg"
+              alt="Tengku Haikal logo"
+              className="h-11 w-11 object-contain sm:h-12 sm:w-12"
+            />
+
             <span className="hidden text-[11px] font-black uppercase leading-tight tracking-[0.14em] sm:block">
               Tengku Haikal
-              <span className="block text-[#5d5d56]">Portfolio / 2026</span>
+              <span className="block text-[#5d5d56]">Portfolio</span>
             </span>
           </Link>
 
@@ -86,23 +89,23 @@ const Navbar = () => {
             aria-expanded={isOpen}
           >
             <span
-              className={`absolute w-5 h-[2px] bg-current transition duration-300 ${
-                isOpen ? "rotate-45" : "-translate-y-1.5"
-              }`}
+              className={`absolute h-[2px] w-5 bg-current transition duration-300 ${isOpen ? "rotate-45" : "-translate-y-1.5"
+                }`}
             />
-            <span className={`absolute w-5 h-[2px] bg-current transition duration-300 ${isOpen ? "opacity-0" : ""}`} />
             <span
-              className={`absolute w-5 h-[2px] bg-current transition duration-300 ${
-                isOpen ? "-rotate-45" : "translate-y-1.5"
-              }`}
+              className={`absolute h-[2px] w-5 bg-current transition duration-300 ${isOpen ? "opacity-0" : ""
+                }`}
+            />
+            <span
+              className={`absolute h-[2px] w-5 bg-current transition duration-300 ${isOpen ? "-rotate-45" : "translate-y-1.5"
+                }`}
             />
           </button>
         </div>
 
         <div
-          className={`grid transition-[grid-template-rows,opacity] duration-300 md:hidden ${
-            isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-          }`}
+          className={`grid transition-[grid-template-rows,opacity] duration-300 md:hidden ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+            }`}
         >
           <div className="overflow-hidden">
             <div className="flex flex-col gap-3 border-t-2 border-[#151513] px-1 py-4">

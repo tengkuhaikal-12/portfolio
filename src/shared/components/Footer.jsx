@@ -155,13 +155,11 @@ const Footer = () => {
         {/* Left */}
         <div>
           <div className="flex items-center gap-4">
-            <span className="grid h-14 w-14 place-items-center border-2 border-[#fbf8f0] bg-[#ff5a36] shadow-[4px_4px_0_#fbf8f0]">
-              <img
-                src="/haikal-logo.svg"
-                alt=""
-                className="h-9 w-9 object-contain"
-              />
-            </span>
+            <img
+              src="/haikal-logo.svg"
+              alt=""
+              className="h-14 w-14 object-contain"
+            />
 
             <div>
               <h2 className="font-display text-xl font-black uppercase tracking-tight text-[#fbf8f0]">
@@ -203,7 +201,7 @@ const Footer = () => {
                     ROUTES.adminAnalytics
                   )
                 }
-                className="border-2 border-[#fbf8f0] px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#fbf8f0] hover:bg-[#ff5a36] hover:text-[#151513]"
+                className="border-2 border-[#fbf8f0] px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#fbf8f0] shadow-[4px_4px_0_#ff5a36] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[#ff5a36] hover:text-[#151513] hover:shadow-[2px_2px_0_#ff5a36]"
               >
                 Analytics
               </button>
@@ -245,14 +243,14 @@ const Footer = () => {
                       : undefined
                   }
                   rel="noreferrer"
-                  className="group flex flex-col items-center justify-center gap-3 border-2 border-[#fbf8f0] bg-[#242421] p-4 text-[#fbf8f0] shadow-[4px_4px_0_#ff5a36] transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[#ff5a36] hover:text-[#151513] hover:shadow-[2px_2px_0_#ff5a36]"
+                  className="group flex min-h-20 flex-col items-center justify-center gap-2 border-2 border-[#fbf8f0] bg-[#242421] p-3 text-[#fbf8f0] shadow-[3px_3px_0_#ff5a36] transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[#ff5a36] hover:text-[#151513] hover:shadow-[1px_1px_0_#ff5a36]"
                 >
                   <Icon
-                    size={28}
+                    size={20}
                     className="transition-transform group-hover:scale-110"
                   />
 
-                  <span className="text-[10px] font-black uppercase tracking-[0.12em]">
+                  <span className="text-[9px] font-black uppercase tracking-[0.12em]">
                     {item.label}
                   </span>
                 </a>

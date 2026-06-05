@@ -1,0 +1,44 @@
+.portfolio-slide {
+  animation-duration: 300ms;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.portfolio-slide-next {
+  animation-name: portfolio-slide-next;
+}
+
+.portfolio-slide-previous {
+  animation-name: portfolio-slide-previous;
+}
+
+@keyframes portfolio-slide-next {
+  from {
+    opacity: 0.15;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes portfolio-slide-previous {
+  from {
+    opacity: 0.15;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-slide {
+    animation: none;
+  }
+}

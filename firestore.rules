@@ -12,6 +12,7 @@ service cloud.firestore {
     // - duration: string (required, <= 64)
     // - sortDate: number (required)
     // - image: string (optional, <= 900000)
+    // - imagePosition: string (optional, CSS object-position as "0-100% 0-100%")
     // - techStack: list (optional, <= 50 items)
     // - links: list (optional, <= 25 items)
     // - gallery: list (optional, <= 60 items)
@@ -79,11 +80,18 @@ service cloud.firestore {
         (request.resource.data[field] is list && request.resource.data[field].size() <= maxLen);
     }
 
+    function validOptionalImagePosition() {
+      return !('imagePosition' in request.resource.data) ||
+        (request.resource.data.imagePosition is string &&
+          request.resource.data.imagePosition.size() <= 16 &&
+          request.resource.data.imagePosition.matches('^(100|[0-9]{1,2})% (100|[0-9]{1,2})%$'));
+    }
+
     function validPortfolioEntry() {
       let requiredFields = ['title', 'subtitle', 'description', 'duration', 'sortDate'];
       let allowedFields = [
         'title', 'subtitle', 'description', 'duration', 'sortDate',
-        'image', 'techStack', 'createdAt', 'updatedAt', 'links', 'gallery',
+        'image', 'imagePosition', 'techStack', 'createdAt', 'updatedAt', 'links', 'gallery',
         'status', 'shortDescription', 'location', 'link', 'url', 'liveUrl',
         'github', 'repoUrl', 'tags', 'images', 'imageGallery'
       ];
@@ -96,6 +104,7 @@ service cloud.firestore {
         validRequiredString('duration', 1, 64) &&
         request.resource.data.sortDate is number &&
         validOptionalString('image', 900000) &&
+        validOptionalImagePosition() &&
         validOptionalList('techStack', 50) &&
         validOptionalList('links', 25) &&
         validOptionalList('gallery', 60) &&

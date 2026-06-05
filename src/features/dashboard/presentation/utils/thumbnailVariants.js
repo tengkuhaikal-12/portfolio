@@ -1,0 +1,58 @@
+export const thumbnailVariants = [
+  {
+    proportion: 0.45,
+    softness: 1,
+    distortion: 0.25,
+    swirl: 0.8,
+    swirlIterations: 10,
+    shape: "checks",
+    shapeScale: 0.1,
+    scale: 1,
+    rotation: 0,
+    speed: 0.55,
+    colors: ["#151513", "#ff5a36", "#fbf8f0", "#242421"],
+  },
+  {
+    proportion: 0.34,
+    softness: 0.85,
+    distortion: 0.32,
+    swirl: 0.64,
+    swirlIterations: 8,
+    shape: "checks",
+    shapeScale: 0.16,
+    scale: 1.2,
+    rotation: 22,
+    speed: 0.45,
+    colors: ["#242421", "#f2efe7", "#ff5a36", "#151513"],
+  },
+  {
+    proportion: 0.56,
+    softness: 1.15,
+    distortion: 0.22,
+    swirl: 0.92,
+    swirlIterations: 7,
+    shape: "checks",
+    shapeScale: 0.08,
+    scale: 1.05,
+    rotation: -18,
+    speed: 0.5,
+    colors: ["#ff5a36", "#151513", "#fbf8f0", "#5d5d56"],
+  },
+  {
+    proportion: 0.42,
+    softness: 0.7,
+    distortion: 0.28,
+    swirl: 0.72,
+    swirlIterations: 11,
+    shape: "checks",
+    shapeScale: 0.13,
+    scale: 0.92,
+    rotation: 41,
+    speed: 0.4,
+    colors: ["#fbf8f0", "#242421", "#ff5a36", "#151513"],
+  },
+];
+
+export const getThumbnailVariant = (index = 0) => {
+  return thumbnailVariants[index % thumbnailVariants.length];
+};

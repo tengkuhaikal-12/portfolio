@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/shared/components/Navbar";
 import Footer from "@/shared/components/Footer";
 import EditPortfolioModal from "@/features/dashboard/presentation/components/EditPortfolioModal";
+import DefaultThumbnail from "@/features/dashboard/presentation/components/cards/DefaultThumbnail";
 import Lightbox from "@/shared/components/Lightbox";
 import ConfirmModal from "@/shared/components/ConfirmModal";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -281,6 +282,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
   const duration = item?.duration || item?.date || "";
   const location = item?.location || "";
   const tags = collectionName === "projects" ? item?.techStack || item?.tags || [] : item?.tags || [];
+  const defaultThumbnailIndex = collectionName === "projects" ? 0 : collectionName === "experience" ? 1 : 2;
 
   return (
     <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513] selection:bg-[#ff5a36]">
@@ -294,10 +296,13 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
               src={item.image}
               alt={title}
               className="absolute inset-0 h-full w-full object-cover grayscale transition duration-300 hover:scale-[1.02] hover:grayscale-0"
+              style={{ objectPosition: item.imagePosition || "50% 50%" }}
               loading="eager"
             />
           ) : (
-            <div className="absolute inset-0 bg-[#34342f]" />
+            <div className="absolute inset-0">
+              <DefaultThumbnail index={defaultThumbnailIndex} />
+            </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#151513]/85 via-[#151513]/15 to-transparent" />
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:38px_38px]" />
