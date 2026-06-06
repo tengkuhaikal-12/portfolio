@@ -13,5 +13,6 @@ export const PORTFOLIO_COLLECTIONS = [
 ];
 
 export const APP_CONFIG_DOCS = {
+  heroProfile: "heroProfile",
   visitorAlerts: "visitorAlerts",
 };

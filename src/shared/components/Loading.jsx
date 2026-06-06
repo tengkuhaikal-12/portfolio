@@ -3,133 +3,127 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const words = [
-    "Assalamualaikum", "Salam Sejahtera", "Hello", "你好", "Vanakkam", "ஹலோ", "こんにちは", "안녕하세요", 
-];
+const loadingWords = ["Loading", "Syncing", "Rendering", "Preparing", "Almost Ready"];
+const MotionDiv = motion.div;
+const MotionP = motion.p;
 
-const opacity = {
-    initial: {
-        opacity: 0,
-    },
-    enter: {
-        opacity: 0.75,
-        transition: { duration: 1, delay: 0.2 },
-    },
-};
-
-const slideUp = {
-    initial: {
-        top: 0,
-    },
+const screenMotion = {
+    initial: { y: 0 },
     exit: {
-        top: "-100vh",
+        y: "-100%",
         transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1], delay: 0.2 },
     },
 };
 
-const MotionDiv = motion.div;
-const MotionP = motion.p;
-const MotionPath = motion.path;
+const panelMotion = {
+    initial: { opacity: 0, y: 18 },
+    enter: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+    },
+};
 
-function getViewportDimension() {
-    if (typeof window === "undefined") {
-        return { width: 0, height: 0 };
-    }
+const wordMotion = {
+    initial: { opacity: 0, y: 10 },
+    enter: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] },
+    },
+};
 
-    return {
-        width: window.innerWidth,
-        height: window.innerHeight,
-    };
-}
-
-export default function Preloader({ onComplete }) {
+export default function Loading({ onComplete }) {
     const [index, setIndex] = useState(0);
-    const [dimension, setDimension] = useState(getViewportDimension);
     const [isExiting, setIsExiting] = useState(false);
 
     useEffect(() => {
-        const handleResize = () => setDimension(getViewportDimension());
+        if (onComplete) return undefined;
 
-        window.addEventListener("resize", handleResize);
+        const interval = setInterval(() => {
+            setIndex((current) => (current + 1) % loadingWords.length);
+        }, 650);
 
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
+        return () => clearInterval(interval);
+    }, [onComplete]);
 
     useEffect(() => {
-        let timer;
-        let completeTimer;
+        if (!onComplete) return undefined;
 
-        if (index === words.length - 1) {
-            timer = setTimeout(() => {
-                setIsExiting(true);
-
-                completeTimer = setTimeout(() => {
-                    onComplete?.();
-                }, 1000);
-            }, 1000);
+        if (index === loadingWords.length - 1) {
+            const exitTimer = setTimeout(() => setIsExiting(true), 650);
+            const completeTimer = setTimeout(() => onComplete?.(), 1450);
 
             return () => {
-                clearTimeout(timer);
+                clearTimeout(exitTimer);
                 clearTimeout(completeTimer);
             };
         }
 
-        timer = setTimeout(
+        const timer = setTimeout(
             () => {
-                setIndex((prev) => prev + 1);
+                setIndex((current) => current + 1);
             },
-            index === 0 ? 1000 : 150
+            index === 0 ? 850 : 260
         );
 
         return () => clearTimeout(timer);
     }, [index, onComplete]);
 
-    const initialPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${dimension.height} Q${dimension.width / 2
-        } ${dimension.height + 300} 0 ${dimension.height} L0 0`;
-
-    const targetPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${dimension.height} Q${dimension.width / 2
-        } ${dimension.height} 0 ${dimension.height} L0 0`;
-
-    const curve = {
-        initial: {
-            d: initialPath,
-            transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1] },
-        },
-        exit: {
-            d: targetPath,
-            transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1], delay: 0.3 },
-        },
-    };
-
     return (
         <MotionDiv
-            variants={slideUp}
+            variants={screenMotion}
             initial="initial"
             animate={isExiting ? "exit" : "initial"}
-            className="fixed inset-0 z-[99999999999] flex h-screen w-screen items-center justify-center bg-[var(--color-loading-backdrop)]"
+            className="fixed inset-0 z-[99999999999] flex min-h-screen w-screen items-center justify-center overflow-hidden bg-[var(--color-paper)] bg-[linear-gradient(rgb(var(--color-ink-rgb)/0.055)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-ink-rgb)/0.055)_1px,transparent_1px)] [background-size:32px_32px] p-4 text-[var(--color-ink)]"
+            role="status"
+            aria-live="polite"
         >
-            {dimension.width > 0 && (
-                <>
-                    <MotionP
-                        variants={opacity}
-                        initial="initial"
-                        animate="enter"
-                        className="absolute z-10 flex items-center text-4xl font-medium text-[var(--color-loading-text)] md:text-5xl lg:text-6xl"
-                    >
-                        <span className="mr-2.5 block h-2.5 w-2.5 rounded-full bg-[var(--color-loading-text)]" />
-                        {words[index]}
-                    </MotionP>
+            <MotionDiv
+                variants={panelMotion}
+                initial="initial"
+                animate="enter"
+                className="relative w-full max-w-[640px]"
+            >
+                <div className="absolute inset-0 translate-x-3 translate-y-3 border-2 border-[var(--color-ink)] bg-[var(--color-accent)]" />
 
-                    <svg className="absolute top-0 h-[calc(100%+300px)] w-full">
-                        <MotionPath
-                            variants={curve}
-                            initial="initial"
-                            animate={isExiting ? "exit" : "initial"}
-                            fill="var(--color-loading-bg)"
-                        />
-                    </svg>
-                </>
-            )}
+                <div className="relative border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] shadow-[8px_8px_0_var(--color-ink)]">
+                    <div className="flex items-center justify-between gap-4 border-b-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-4 text-[var(--color-paper-light)] sm:p-5">
+                        <span className="font-display text-xl font-black uppercase leading-none sm:text-2xl">Portfolio</span>
+                    </div>
+
+                    <div className="p-5 sm:p-8">
+                        <div className="mb-5 flex items-end gap-4 border-b-2 border-[var(--color-ink)] pb-5">
+                            <span className="font-serif text-3xl font-black italic leading-none text-[var(--color-accent)]">
+                                01
+                            </span>
+                            <MotionP
+                                key={loadingWords[index]}
+                                variants={wordMotion}
+                                initial="initial"
+                                animate="enter"
+                                className="break-words font-display text-4xl font-black uppercase leading-[0.9] tracking-normal text-[var(--color-ink)] sm:text-5xl md:text-6xl"
+                            >
+                                {loadingWords[index]}
+                            </MotionP>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-5 gap-2" aria-hidden="true">
+                                {loadingWords.map((word, wordIndex) => (
+                                    <span
+                                        key={word}
+                                        className={`h-8 border-2 border-[var(--color-ink)] ${wordIndex <= index
+                                                ? "bg-[var(--color-accent)] shadow-[2px_2px_0_var(--color-ink)]"
+                                                : "bg-[var(--color-paper)]"
+                                            }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </MotionDiv>
         </MotionDiv>
     );
 }

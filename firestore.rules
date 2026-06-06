@@ -34,6 +34,10 @@ service cloud.firestore {
     // - updatedAt: timestamp (required, must equal request.time)
     // - updatedByUid: string (optional)
     // - updatedByEmail: string (optional)
+    //
+    // appConfig/heroProfile
+    // - image: string (required, Firebase Storage download URL, <= 2000)
+    // - updatedAt: timestamp (required, must equal request.time)
 
     function isAuthenticated() {
       return request.auth != null;
@@ -178,6 +182,17 @@ service cloud.firestore {
         validOptionalString('updatedByEmail', 320);
     }
 
+    function validHeroProfileConfig() {
+      let requiredFields = ['image', 'updatedAt'];
+      let allowedFields = ['image', 'updatedAt'];
+
+      return required(requiredFields) &&
+        allowed(allowedFields) &&
+        validRequiredString('image', 1, 2000) &&
+        request.resource.data.updatedAt is timestamp &&
+        request.resource.data.updatedAt == request.time;
+    }
+
     match /projects/{docId} {
       allow read: if true;
       allow create: if isAdmin() && validPortfolioEntry();
@@ -206,8 +221,11 @@ service cloud.firestore {
     }
 
     match /appConfig/{docId} {
-      allow read: if isAdmin();
-      allow create, update: if isAdmin() && docId == 'visitorAlerts' && validVisitorAlertConfig();
+      allow read: if isAdmin() || docId == 'heroProfile';
+      allow create, update: if isAdmin() && (
+        (docId == 'visitorAlerts' && validVisitorAlertConfig()) ||
+        (docId == 'heroProfile' && validHeroProfileConfig())
+      );
       allow delete: if false;
     }
 

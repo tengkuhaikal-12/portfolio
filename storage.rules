@@ -21,7 +21,8 @@ service firebase.storage {
     function isPortfolioCollection(collectionName) {
       return collectionName == 'projects' ||
         collectionName == 'experience' ||
-        collectionName == 'education';
+        collectionName == 'education' ||
+        collectionName == 'profile';
     }
 
     function isValidImageUpload() {
