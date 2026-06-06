@@ -1,4 +1,4 @@
-import { db, storage } from "@/shared/services/firebase/client";
+import { db } from "@/shared/services/firebase/client";
 import { COLLECTIONS, PORTFOLIO_COLLECTIONS } from "@/shared/constants/collections";
 import {
   arrayUnion,
@@ -12,7 +12,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
+import { uploadImage } from "@/shared/services/firebase/imageUpload";
 
 export async function fetchCollectionEntries(collectionName) {
   const collectionQuery = query(collection(db, collectionName), orderBy("sortDate", "desc"));
@@ -54,11 +54,9 @@ export async function appendGalleryImages(collectionName, id, files = []) {
   const uploads = [];
 
   for (const file of files) {
-    const safeName = (file.name || "image").replace(/[^\w.-]+/g, "_");
-    const storagePath = `${collectionName}/${id}/gallery/${Date.now()}_${safeName}`;
-    const fileRef = storageRef(storage, storagePath);
-    await uploadBytes(fileRef, file);
-    const url = await getDownloadURL(fileRef);
+    const url = await uploadImage(file, {
+      folder: `portfolio/${collectionName}/${id}/gallery`,
+    });
     uploads.push({ src: url });
   }
 

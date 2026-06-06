@@ -33,7 +33,7 @@ const CONTACT_LINKS = [
 
 const FooterNavLink = ({ isHome, id, children }) => {
   const className =
-    "relative w-fit font-black uppercase tracking-[0.1em] text-[#fbf8f0] after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:bg-[#ff5a36] after:transition-transform hover:after:origin-left hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]";
+    "relative w-fit font-black uppercase tracking-[0.1em] text-[var(--color-paper-light)] after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:bg-[var(--color-accent)] after:transition-transform hover:after:origin-left hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]";
 
   if (isHome) {
     return (
@@ -142,7 +142,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="border-t-2 border-[#151513] bg-[#191917] text-[#aaa89f]">
+    <footer className="border-t-2 border-[var(--color-ink)] bg-[var(--color-footer)] text-[var(--color-muted-light)]">
       <AlertModal
         isOpen={alertState.open}
         title={alertState.title}
@@ -162,7 +162,7 @@ const Footer = () => {
             />
 
             <div>
-              <h2 className="font-display text-xl font-black uppercase tracking-tight text-[#fbf8f0]">
+              <h2 className="font-display text-xl font-black uppercase tracking-tight text-[var(--color-paper-light)]">
                 Tengku Haikal
               </h2>
 
@@ -185,7 +185,7 @@ const Footer = () => {
                   ? () => navigate(ROUTES.admin)
                   : login
               }
-              className="border-2 border-[#fbf8f0] bg-[#fbf8f0] px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#151513] shadow-[4px_4px_0_#ff5a36] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_#ff5a36] disabled:opacity-60"
+              className="border-2 border-[var(--color-paper-light)] bg-[var(--color-paper-light)] px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-ink)] shadow-[4px_4px_0_var(--color-accent)] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_var(--color-accent)] disabled:opacity-60"
             >
               {isAdmin
                 ? "Admin"
@@ -201,7 +201,7 @@ const Footer = () => {
                     ROUTES.adminAnalytics
                   )
                 }
-                className="border-2 border-[#fbf8f0] px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#fbf8f0] shadow-[4px_4px_0_#ff5a36] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[#ff5a36] hover:text-[#151513] hover:shadow-[2px_2px_0_#ff5a36]"
+                className="border-2 border-[var(--color-paper-light)] px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-paper-light)] shadow-[4px_4px_0_var(--color-accent)] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[var(--color-accent)] hover:text-[var(--color-ink)] hover:shadow-[2px_2px_0_var(--color-accent)]"
               >
                 Analytics
               </button>
@@ -211,7 +211,7 @@ const Footer = () => {
 
         {/* Index */}
         <div>
-          <h3 className="mb-5 border-b border-[#56554f] pb-3 text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">
+          <h3 className="mb-5 border-b border-[var(--color-panel-muted)] pb-3 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-accent)]">
             Index
           </h3>
 
@@ -225,7 +225,7 @@ const Footer = () => {
 
         {/* Contact */}
         <div>
-          <h3 className="mb-5 border-b border-[#56554f] pb-3 text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">
+          <h3 className="mb-5 border-b border-[var(--color-panel-muted)] pb-3 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-accent)]">
             Contact
           </h3>
 
@@ -243,7 +243,7 @@ const Footer = () => {
                       : undefined
                   }
                   rel="noreferrer"
-                  className="group flex min-h-20 flex-col items-center justify-center gap-2 border-2 border-[#fbf8f0] bg-[#242421] p-3 text-[#fbf8f0] shadow-[3px_3px_0_#ff5a36] transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[#ff5a36] hover:text-[#151513] hover:shadow-[1px_1px_0_#ff5a36]"
+                  className="group flex min-h-20 flex-col items-center justify-center gap-2 border-2 border-[var(--color-paper-light)] bg-[var(--color-panel)] p-3 text-[var(--color-paper-light)] shadow-[3px_3px_0_var(--color-accent)] transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[var(--color-accent)] hover:text-[var(--color-ink)] hover:shadow-[1px_1px_0_var(--color-accent)]"
                 >
                   <Icon
                     size={20}

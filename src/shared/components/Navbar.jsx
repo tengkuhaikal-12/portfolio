@@ -31,10 +31,10 @@ const Navbar = () => {
   }, [location]);
 
   const linkClass =
-    "relative px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#151513] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:bg-[#ff5a36] after:transition-transform hover:after:origin-left hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f2efe7]";
+    "relative px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-ink)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:bg-[var(--color-accent)] after:transition-transform hover:after:origin-left hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-paper)]";
 
   const mobileLinkClass =
-    "w-full border-2 border-[#151513] bg-[#fbf8f0] px-4 py-3 text-left text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#151513] transition hover:-translate-y-0.5 hover:bg-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2";
+    "w-full border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] px-4 py-3 text-left text-xs font-black uppercase tracking-[0.12em] text-[var(--color-ink)] shadow-[3px_3px_0_var(--color-ink)] transition hover:-translate-y-0.5 hover:bg-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2";
 
   const NavItem = ({ link, mobile = false }) => {
     const className = mobile ? mobileLinkClass : linkClass;
@@ -55,13 +55,13 @@ const Navbar = () => {
   };
 
     return (
-    <nav className="fixed left-0 right-0 top-4 z-50 px-3 text-[#151513]">
-      <div className="mx-auto max-w-7xl border-2 border-[#151513] bg-[#f2efe7]/95 px-4 backdrop-blur-md sm:px-6">
+    <nav className="fixed left-0 right-0 top-4 z-500 px-3 text-[var(--color-ink)]">
+      <div className="mx-auto max-w-7xl border-2 border-[var(--color-ink)] bg-[rgb(var(--color-paper-rgb)/0.95)] px-4 backdrop-blur-md sm:px-6">
         <div className="flex min-h-16 items-center justify-between gap-4">
           <Link
             to="/"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2"
+            className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
             aria-label="Tengku Haikal home"
           >
             <img
@@ -72,11 +72,11 @@ const Navbar = () => {
 
             <span className="hidden text-[11px] font-black uppercase leading-tight tracking-[0.14em] sm:block">
               Tengku Haikal
-              <span className="block text-[#5d5d56]">Portfolio</span>
+              <span className="block text-[var(--color-muted)]">Portfolio</span>
             </span>
           </Link>
 
-          <div className="hidden items-center gap-2 border-x border-[#d7d3c8] px-3 md:flex">
+          <div className="hidden items-center gap-2 border-x border-[var(--color-paper-muted)] px-3 md:flex">
             {navLinks.map((link) => (
               <NavItem key={link.id} link={link} />
             ))}
@@ -84,7 +84,7 @@ const Navbar = () => {
 
           <button
             onClick={() => setIsOpen((prev) => !prev)}
-            className="relative mr-1 flex h-10 w-10 cursor-pointer items-center justify-center border-2 border-[#151513] bg-[#fbf8f0] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2 md:hidden"
+            className="relative mr-1 flex h-10 w-10 cursor-pointer items-center justify-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] shadow-[3px_3px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_var(--color-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 md:hidden"
             aria-label="Toggle menu"
             aria-expanded={isOpen}
           >
@@ -108,7 +108,7 @@ const Navbar = () => {
             }`}
         >
           <div className="overflow-hidden">
-            <div className="flex flex-col gap-3 border-t-2 border-[#151513] px-1 py-4">
+            <div className="flex flex-col gap-3 border-t-2 border-[var(--color-ink)] px-1 py-4">
               {navLinks.map((link) => (
                 <NavItem key={link.id} link={link} mobile />
               ))}

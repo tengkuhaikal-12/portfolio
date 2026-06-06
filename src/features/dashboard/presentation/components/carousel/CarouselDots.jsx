@@ -11,7 +11,7 @@ const CarouselDots = ({ count, activeIndex, onSelect, label, className = "" }) =
             key={index}
             type="button"
             onClick={() => onSelect(index)}
-            className={`h-3 w-3 touch-manipulation border-2 border-[#151513] transition hover:scale-110 active:scale-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2 ${isActive ? "bg-[#ff5a36]" : "bg-[#fbf8f0]"}`}
+            className={`h-3 w-3 touch-manipulation border-2 border-[var(--color-ink)] transition hover:scale-110 active:scale-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 ${isActive ? "bg-[var(--color-accent)]" : "bg-[var(--color-paper-light)]"}`}
             aria-label={`Show ${label} slide ${index + 1}`}
             aria-current={isActive ? "true" : undefined}
           />

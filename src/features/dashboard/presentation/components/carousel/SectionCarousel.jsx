@@ -9,8 +9,8 @@ import { getItemDetailHref, getItemMeta } from "@/features/dashboard/presentatio
 import "@/features/dashboard/presentation/styles/animations.css";
 
 const EmptyCarouselCard = () => (
-  <div className="flex h-full min-h-72 items-center justify-center border-2 border-[#151513] bg-[#fbf8f0] p-8 text-center shadow-[6px_6px_0_#151513]">
-    <p className="border-2 border-[#151513] bg-[#f2efe7] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#151513] shadow-[4px_4px_0_#151513]">
+  <div className="flex h-full min-h-72 items-center justify-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-8 text-center shadow-[6px_6px_0_var(--color-ink)]">
+    <p className="border-2 border-[var(--color-ink)] bg-[var(--color-paper)] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--color-ink)] shadow-[4px_4px_0_var(--color-ink)]">
       No entries yet.
     </p>
   </div>
@@ -55,11 +55,11 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
   };
 
   return (
-    <section id={id} className={`relative min-h-screen overflow-hidden border-b-2 border-[#151513] px-4 py-16 sm:px-6 sm:py-20 ${config.dark ? "bg-[#242421] text-[#fbf8f0]" : "bg-[#f2efe7]/90 text-[#151513]"}`}>
+    <section id={id} className={`relative min-h-screen overflow-hidden border-b-2 border-[var(--color-ink)] px-4 py-16 sm:px-6 sm:py-20 ${config.dark ? "bg-[var(--color-panel)] text-[var(--color-paper-light)]" : "bg-[rgb(var(--color-paper-rgb)/0.9)] text-[var(--color-ink)]"}`}>
       {config.dark ? (
         <>
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:32px_32px]" />
-          <div className="pointer-events-none absolute right-0 top-0 h-2 w-1/3 bg-[#ff5a36]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgb(var(--color-white-rgb)/0.035)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-white-rgb)/0.035)_1px,transparent_1px)] [background-size:32px_32px]" />
+          <div className="pointer-events-none absolute right-0 top-0 h-2 w-1/3 bg-[var(--color-accent)]" />
         </>
       ) : null}
 
@@ -73,7 +73,7 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
 
         <div className="mt-8 flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
           <div className="flex shrink-0 items-center justify-between gap-3">
-            <div className={`${config.dark ? "text-[#c7c5bd]" : "text-[#5d5d56]"} text-[10px] font-black uppercase tracking-[0.16em]`}>
+            <div className={`${config.dark ? "text-[var(--color-copy-muted)]" : "text-[var(--color-muted)]"} text-[10px] font-black uppercase tracking-[0.16em]`}>
               <span className="lg:hidden">{items.length ? `Slide ${activeIndex + 1} / ${items.length}` : "Slide 0 / 0"}</span>
               <span className="hidden lg:inline">{items.length ? `Page ${desktopPageIndex + 1} / ${desktopPageCount}` : "Page 0 / 0"}</span>
             </div>

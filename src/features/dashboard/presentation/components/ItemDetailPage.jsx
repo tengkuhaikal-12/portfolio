@@ -18,7 +18,12 @@ import {
   IoTrashOutline,
 } from "react-icons/io5";
 import { FaGithub } from "react-icons/fa";
-import { appendGalleryImages, fetchPortfolioItem, saveGallery as persistGallery } from "@/features/dashboard/data/portfolioService";
+import {
+  appendGalleryImages,
+  deletePortfolioEntry,
+  fetchPortfolioItem,
+  saveGallery as persistGallery,
+} from "@/features/dashboard/data/portfolioService";
 
 const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richText" }) => {
   const { id } = useParams();
@@ -35,6 +40,9 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
   const [galleryUploadError, setGalleryUploadError] = useState("");
   const [isSavingGallery, setIsSavingGallery] = useState(false);
   const [removePhotoConfirm, setRemovePhotoConfirm] = useState({ open: false, src: "" });
+  const [deleteItemConfirmOpen, setDeleteItemConfirmOpen] = useState(false);
+  const [isDeletingItem, setIsDeletingItem] = useState(false);
+  const [deleteItemError, setDeleteItemError] = useState("");
 
   const galleryFileInputRef = useRef(null);
 
@@ -133,19 +141,28 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
 
     if (Array.isArray(item?.links)) {
       item.links.forEach((l) => {
-        if (!l?.href) return;
+        const href = cleanActionHref(l?.href);
+        if (!href) return;
 
         links.push({
           kind: l.kind || "visit",
           label: l.label || "Open",
-          href: l.href,
+          href,
         });
       });
     }
 
     const dedup = new Map();
 
-    links.forEach((l) => dedup.set(l.href, l));
+    links.forEach((l) => {
+      const href = cleanActionHref(l.href);
+      if (!href) return;
+      dedup.set(href, {
+        ...l,
+        href,
+        label: String(l.label || "Open").trim() || "Open",
+      });
+    });
 
     return Array.from(dedup.values()).slice(0, 4);
   }, [item]);
@@ -245,6 +262,29 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
     await saveGallery(nextGallery);
   };
 
+  const requestDeleteItem = () => {
+    if (!isAdmin || isDeletingItem) return;
+    setDeleteItemError("");
+    setDeleteItemConfirmOpen(true);
+  };
+
+  const performDeleteItem = async () => {
+    if (!isAdmin || isDeletingItem) return;
+
+    setDeleteItemError("");
+    setIsDeletingItem(true);
+    try {
+      await deletePortfolioEntry(collectionName, id);
+      setDeleteItemConfirmOpen(false);
+      navigate(`/${collectionName}`, { replace: true });
+    } catch (err) {
+      console.error("Delete item failed:", err);
+      setDeleteItemError(err?.message || `Unable to delete this ${kindLabel.toLowerCase()}. Please try again.`);
+    } finally {
+      setIsDeletingItem(false);
+    }
+  };
+
   const openGalleryLink = (href) => {
     if (!href) return;
     if (/^https?:\/\//i.test(href)) window.open(href, "_blank", "noreferrer");
@@ -255,19 +295,19 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513]">
+      <div className="min-h-screen bg-[var(--color-paper)] bg-[linear-gradient(rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[var(--color-ink)]">
         <Navbar />
         <div className="mx-auto max-w-4xl px-6 pb-20 pt-32">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex cursor-pointer items-center gap-2 border-2 border-[#151513] bg-[#fbf8f0] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+            className="inline-flex cursor-pointer items-center gap-2 border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] shadow-[3px_3px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_var(--color-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
           >
             <IoArrowBackOutline /> Back
           </button>
-          <div className="mt-10 border-2 border-[#151513] bg-[#fbf8f0] p-8 shadow-[8px_8px_0_#151513]">
+          <div className="mt-10 border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-8 shadow-[8px_8px_0_var(--color-ink)]">
             <p className="font-display text-3xl font-black uppercase tracking-tight">Not found</p>
-            <p className="mt-3 text-sm text-[#5d5d56]">This {kindLabel.toLowerCase()} does not exist (or was removed).</p>
-            <Link to="/" className="mt-7 inline-flex items-center gap-2 border-2 border-[#151513] bg-[#ff5a36] px-5 py-3 text-xs font-black uppercase tracking-[0.12em] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]">
+            <p className="mt-3 text-sm text-[var(--color-muted)]">This {kindLabel.toLowerCase()} does not exist (or was removed).</p>
+            <Link to="/" className="mt-7 inline-flex items-center gap-2 border-2 border-[var(--color-ink)] bg-[var(--color-accent)] px-5 py-3 text-xs font-black uppercase tracking-[0.12em] shadow-[3px_3px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]">
               Go home
             </Link>
           </div>
@@ -287,12 +327,12 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
   const hasSidebar = hasLinkActions || isAdmin;
 
   return (
-    <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513] selection:bg-[#ff5a36]">
+    <div className="min-h-screen bg-[var(--color-paper)] bg-[linear-gradient(rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[var(--color-ink)] selection:bg-[var(--color-accent)]">
       <Navbar />
 
       {/* HERO */}
-      <section className="border-b-2 border-[#151513] bg-[#242421] px-4 pb-10 pt-24 sm:px-6 sm:pb-14 sm:pt-28">
-        <div className="relative mx-auto h-[44vh] w-full max-w-7xl overflow-hidden border-2 border-[#151513] shadow-[8px_8px_0_#ff5a36] md:h-[58vh]">
+      <section className="border-b-2 border-[var(--color-ink)] bg-[var(--color-panel)] px-4 pb-10 pt-24 sm:px-6 sm:pb-14 sm:pt-28">
+        <div className="relative mx-auto h-[44vh] w-full max-w-7xl overflow-hidden border-2 border-[var(--color-ink)] shadow-[8px_8px_0_var(--color-accent)] md:h-[58vh]">
           {item?.image ? (
             <img
               src={item.image}
@@ -306,9 +346,9 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
               <DefaultThumbnail index={defaultThumbnailIndex} />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#151513]/85 via-[#151513]/15 to-transparent" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:38px_38px]" />
-          <div className="absolute left-5 top-5 border-2 border-[#151513] bg-[#ff5a36] px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_#151513]">
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--color-ink-rgb)/0.85)] via-[rgb(var(--color-ink-rgb)/0.15)] to-transparent" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgb(var(--color-white-rgb)/0.05)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-white-rgb)/0.05)_1px,transparent_1px)] [background-size:38px_38px]" />
+          <div className="absolute left-5 top-5 border-2 border-[var(--color-ink)] bg-[var(--color-accent)] px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_var(--color-ink)]">
             {kindLabel}
           </div>
 
@@ -316,7 +356,7 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
             <div className="mx-auto max-w-7xl px-5 pb-6 sm:px-8 sm:pb-8">
               <button
                 onClick={() => navigate(-1)}
-                className="inline-flex cursor-pointer items-center gap-2 border-2 border-[#fbf8f0] bg-[#151513] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] shadow-[3px_3px_0_#ff5a36] transition hover:bg-[#ff5a36] hover:text-[#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                className="inline-flex cursor-pointer items-center gap-2 border-2 border-[var(--color-paper-light)] bg-[var(--color-ink)] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-paper-light)] shadow-[3px_3px_0_var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-[var(--color-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
               >
                 <IoArrowBackOutline /> Back
               </button>
@@ -327,17 +367,17 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
 
       {/* MAIN INFO */}
       <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 md:mt-14">
-        <div className="grid grid-cols-1 gap-7 md:grid-cols-12">
-          <div className={`overflow-hidden border-2 border-[#151513] bg-[#fbf8f0] shadow-[6px_6px_0_#151513] ${hasSidebar ? "md:col-span-8" : "md:col-span-12"}`}>
+        <div className="grid grid-cols-1 items-start gap-7 md:grid-cols-12">
+          <div className={`overflow-hidden border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] shadow-[6px_6px_0_var(--color-ink)] ${hasSidebar ? "md:col-span-8" : "md:col-span-12"}`}>
             <div className="p-6 md:p-9">
-              <p className="mb-5 text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">{kindLabel} / Overview</p>
+              <p className="mb-5 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-accent)]">{kindLabel} / Overview</p>
               <h1 className="break-words font-display text-[clamp(2.8rem,7vw,5.5rem)] font-black uppercase leading-[0.85] tracking-[-0.06em]">{title}</h1>
-              {subtitle ? <p className="mt-5 border-l-4 border-[#ff5a36] pl-4 text-sm font-black uppercase tracking-[0.1em] text-[#5d5d56]">{subtitle}</p> : null}
+              {subtitle ? <p className="mt-5 border-l-4 border-[var(--color-accent)] pl-4 text-sm font-black uppercase tracking-[0.1em] text-[var(--color-muted)]">{subtitle}</p> : null}
               {item?.shortDescription ? (
-                <p className="mt-5 text-sm leading-7 text-[#5d5d56] md:text-base">{item.shortDescription}</p>
+                <p className="mt-5 text-sm leading-7 text-[var(--color-muted)] md:text-base">{item.shortDescription}</p>
               ) : null}
 
-              <div className="mt-7 grid grid-cols-1 gap-4 border-t-2 border-[#151513] pt-6 sm:grid-cols-2">
+              <div className="mt-7 grid grid-cols-1 gap-4 border-t-2 border-[var(--color-ink)] pt-6 sm:grid-cols-2">
                 {duration ? (
                   <MetaRow icon={<IoCalendarOutline />} label="Date" value={duration} />
                 ) : null}
@@ -347,14 +387,14 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
 
               {Array.isArray(tags) && tags.length ? (
                 <div className="mt-6">
-                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">
                     Tech stack
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {tags.map((tag) => (
                       <span
                         key={tag}
-                        className="border border-[#151513] bg-[#f2efe7] px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em]"
+                        className="border border-[var(--color-ink)] bg-[var(--color-paper)] px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em]"
                       >
                         {tag}
                       </span>
@@ -366,10 +406,10 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
           </div>
 
           {hasSidebar ? (
-            <div className="space-y-4 md:col-span-4">
+            <div className="space-y-4 self-start md:col-span-4">
               {hasLinkActions ? (
-                <div className="h-full border-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0] shadow-[6px_6px_0_#ff5a36]">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">
+                <div className="border-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-6 text-[var(--color-paper-light)] shadow-[6px_6px_0_var(--color-accent)]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-accent)]">
                     Actions
                   </p>
 
@@ -380,14 +420,10 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
                       return (
                         <a
                           key={action.href}
-                          href={
-                            action.href.startsWith("http")
-                              ? action.href
-                              : `https://${action.href}`
-                          }
+                          href={formatActionHref(action.href)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex w-full items-center justify-between gap-3 border-2 border-[#77756e] bg-[#2e2e2a] px-4 py-3 text-sm font-black transition hover:-translate-y-0.5 hover:border-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                          className="flex w-full items-center justify-between gap-3 border-2 border-[var(--color-border-muted)] bg-[var(--color-panel-soft)] px-4 py-3 text-sm font-black transition hover:-translate-y-0.5 hover:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                         >
                           <div className="flex min-w-0 items-center gap-3">
                             {isGithub ? (
@@ -401,7 +437,7 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
                                 {action.label}
                               </p>
 
-                              <p className="truncate text-[10px] font-normal text-[#aaa89f]">
+                              <p className="truncate text-[10px] font-normal text-[var(--color-muted-light)]">
                                 {action.href}
                               </p>
                             </div>
@@ -414,17 +450,31 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
               ) : null}
 
               {isAdmin ? (
-                <div className="border-2 border-[#151513] bg-[#fbf8f0] p-6 shadow-[6px_6px_0_rgba(21,21,19,0.18)]">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#5d5d56]">
+                <div className="border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-6 shadow-[6px_6px_0_rgb(var(--color-ink-rgb)/0.18)]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-muted)]">
                     Admin
                   </p>
 
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-4 inline-flex w-full items-center justify-center gap-2 border-2 border-[#151513] bg-[#ff5a36] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 border-2 border-[var(--color-ink)] bg-[var(--color-accent)] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-ink)] shadow-[3px_3px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                   >
                     <IoPencilOutline /> Edit
                   </button>
+
+                  <button
+                    onClick={requestDeleteItem}
+                    disabled={isDeletingItem}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 border-2 border-[var(--color-ink)] bg-[var(--color-danger)] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-paper-light)] shadow-[3px_3px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-60"
+                  >
+                    <IoTrashOutline /> {isDeletingItem ? "Deleting..." : "Delete"}
+                  </button>
+
+                  {deleteItemError ? (
+                    <p className="mt-3 border-l-4 border-[var(--color-danger)] pl-3 text-xs font-black leading-5 text-[var(--color-danger)]">
+                      {deleteItemError}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -434,9 +484,9 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
 
       {/* DETAILS */}
       <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 md:mt-16">
-        <div className="border-2 border-[#151513] bg-[#fbf8f0] p-6 shadow-[6px_6px_0_rgba(21,21,19,0.18)] md:p-10">
-          <div className="flex items-end gap-4 border-b-2 border-[#151513] pb-5">
-            <span className="font-serif text-2xl font-black italic text-[#ff5a36]">01</span>
+        <div className="border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-6 shadow-[6px_6px_0_rgb(var(--color-ink-rgb)/0.18)] md:p-10">
+          <div className="flex items-end gap-4 border-b-2 border-[var(--color-ink)] pb-5">
+            <span className="font-serif text-2xl font-black italic text-[var(--color-accent)]">01</span>
             <h2 className="font-display text-4xl font-black uppercase leading-none tracking-[-0.05em] md:text-6xl">Details</h2>
           </div>
           <div className="mt-6 space-y-6">
@@ -448,15 +498,15 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
       {/* GALLERY */}
       {galleryItems.length || isAdmin ? (
         <section className="mx-auto mt-12 max-w-7xl px-4 pb-20 sm:px-6 md:mt-16">
-          <div className="border-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0] shadow-[6px_6px_0_#ff5a36] md:p-10">
-            <div className="flex items-end justify-between gap-4 border-b-2 border-[#77756e] pb-5">
+          <div className="border-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-6 text-[var(--color-paper-light)] shadow-[6px_6px_0_var(--color-accent)] md:p-10">
+            <div className="flex items-end justify-between gap-4 border-b-2 border-[var(--color-border-muted)] pb-5">
               <div>
                 <div className="flex items-end gap-4">
-                  <span className="font-serif text-2xl font-black italic text-[#ff5a36]">02</span>
+                  <span className="font-serif text-2xl font-black italic text-[var(--color-accent)]">02</span>
                   <h2 className="font-display text-4xl font-black uppercase leading-none tracking-[-0.05em] md:text-6xl">Gallery</h2>
                 </div>
               </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#aaa89f]">{galleryItems.length} photos</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted-light)]">{galleryItems.length} photos</p>
             </div>
 
             <div className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -474,28 +524,28 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
                     type="button"
                     onClick={onPickGalleryFiles}
                     disabled={isUploadingGallery || isSavingGallery}
-                    className="group relative grid aspect-square place-items-center overflow-hidden border-2 border-[#77756e] bg-[#2e2e2a] transition hover:border-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] disabled:opacity-70"
+                    className="group relative grid aspect-square place-items-center overflow-hidden border-2 border-[var(--color-border-muted)] bg-[var(--color-panel-soft)] transition hover:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-70"
                     aria-label="Upload gallery images"
                     title="Upload gallery images"
                   >
                     <div className="grid place-items-center text-center px-4">
-                      <div className="mb-3 grid h-12 w-12 place-items-center border-2 border-[#fbf8f0] bg-[#ff5a36] text-[#151513] shadow-[3px_3px_0_#fbf8f0]">
+                      <div className="mb-3 grid h-12 w-12 place-items-center border-2 border-[var(--color-paper-light)] bg-[var(--color-accent)] text-[var(--color-ink)] shadow-[3px_3px_0_var(--color-paper-light)]">
                         <IoAddOutline size={22} />
                       </div>
                       <div className="text-xs font-black uppercase tracking-widest">
                         {isUploadingGallery ? "Uploading..." : isSavingGallery ? "Saving..." : "Add photos"}
                       </div>
-                      <div className="mt-1 text-[10px] text-[#aaa89f]">PNG/JPG/WebP</div>
+                      <div className="mt-1 text-[10px] text-[var(--color-muted-light)]">PNG/JPG/WebP</div>
                     </div>
-                    <div className="absolute inset-0 bg-[#151513]/0 transition group-hover:bg-[#151513]/10" />
+                    <div className="absolute inset-0 bg-[rgb(var(--color-ink-rgb)/0)] transition group-hover:bg-[rgb(var(--color-ink-rgb)/0.1)]" />
                   </button>
                 </>
               ) : null}
               {galleryItems.map((g, idx) => (
-                <div key={g.src} className="group relative aspect-square overflow-hidden border-2 border-[#77756e] transition hover:-translate-y-1 hover:border-[#ff5a36]">
+                <div key={g.src} className="group relative aspect-square overflow-hidden border-2 border-[var(--color-border-muted)] transition hover:-translate-y-1 hover:border-[var(--color-accent)]">
                   <button
                     onClick={() => openLightbox(idx)}
-                    className="absolute inset-0 h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                    className="absolute inset-0 h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                     aria-label={`Open image ${idx + 1}`}
                     type="button"
                   >
@@ -505,8 +555,8 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-[#151513]/0 transition group-hover:bg-[#151513]/25" />
-                    <div className="absolute bottom-2 right-2 grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] opacity-0 shadow-[2px_2px_0_#ff5a36] transition group-hover:opacity-100">
+                    <div className="absolute inset-0 bg-[rgb(var(--color-ink-rgb)/0)] transition group-hover:bg-[rgb(var(--color-ink-rgb)/0.25)]" />
+                    <div className="absolute bottom-2 right-2 grid h-9 w-9 place-items-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] text-[var(--color-ink)] opacity-0 shadow-[2px_2px_0_var(--color-accent)] transition group-hover:opacity-100">
                       <IoOpenOutline />
                     </div>
                   </button>
@@ -519,7 +569,7 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
                         e.stopPropagation();
                         openGalleryLink(g.href);
                       }}
-                      className="absolute left-2 top-2 grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] opacity-0 shadow-[2px_2px_0_#ff5a36] transition group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                      className="absolute left-2 top-2 grid h-9 w-9 place-items-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] text-[var(--color-ink)] opacity-0 shadow-[2px_2px_0_var(--color-accent)] transition group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                       aria-label="Open project link"
                       title="Open project link"
                     >
@@ -537,7 +587,7 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
                           onEditGalleryLink(g.src);
                         }}
                         disabled={isSavingGallery}
-                        className="grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[2px_2px_0_#ff5a36] disabled:opacity-60"
+                        className="grid h-9 w-9 place-items-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] text-[var(--color-ink)] shadow-[2px_2px_0_var(--color-accent)] disabled:opacity-60"
                         aria-label="Edit project link"
                         title="Edit project link"
                       >
@@ -551,7 +601,7 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
                           onRemoveGalleryItem(g.src);
                         }}
                         disabled={isSavingGallery}
-                        className="grid h-9 w-9 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[2px_2px_0_#ff5a36] disabled:opacity-60"
+                        className="grid h-9 w-9 place-items-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] text-[var(--color-ink)] shadow-[2px_2px_0_var(--color-accent)] disabled:opacity-60"
                         aria-label="Remove photo"
                         title="Remove photo"
                       >
@@ -563,9 +613,9 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
               ))}
             </div>
 
-            {galleryUploadError ? <p className="mt-4 border-l-4 border-[#d84833] pl-3 text-sm font-black text-[#ff8065]">{galleryUploadError}</p> : null}
+            {galleryUploadError ? <p className="mt-4 border-l-4 border-[var(--color-danger)] pl-3 text-sm font-black text-[var(--color-danger-light)]">{galleryUploadError}</p> : null}
             {!galleryItems.length && !isUploadingGallery ? (
-              <p className="mt-4 text-sm text-[#aaa89f]">No photos yet.</p>
+              <p className="mt-4 text-sm text-[var(--color-muted-light)]">No photos yet.</p>
             ) : null}
           </div>
         </section>
@@ -590,6 +640,19 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
         }}
       />
 
+      <ConfirmModal
+        isOpen={deleteItemConfirmOpen}
+        title={`Delete ${kindLabel.toLowerCase()}?`}
+        message={`This permanently removes "${title}" from ${collectionName}.`}
+        danger
+        confirmLabel={isDeletingItem ? "Deleting..." : "Delete"}
+        cancelLabel="Cancel"
+        onCancel={() => {
+          if (!isDeletingItem) setDeleteItemConfirmOpen(false);
+        }}
+        onConfirm={performDeleteItem}
+      />
+
       <EditPortfolioModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -609,17 +672,17 @@ const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richTe
 };
 
 const MetaRow = ({ icon, label, value }) => (
-  <div className="flex items-start gap-3 border-2 border-[#151513] bg-[#f2efe7] p-4">
-    <div className="mt-[2px] text-[#ff5a36]">{icon}</div>
+  <div className="flex items-start gap-3 border-2 border-[var(--color-ink)] bg-[var(--color-paper)] p-4">
+    <div className="mt-[2px] text-[var(--color-accent)]">{icon}</div>
 
     <div>
-      <div className="text-[9px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+      <div className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">
         {label}
       </div>
 
       <div className="mt-1 text-sm font-black">
         {value} {" "}{value?.toLowerCase().includes("present") && (
-          <p className="mt-1 text-xs text-[#ff5a36]">
+          <p className="mt-1 text-xs text-[var(--color-accent)]">
             In progress
           </p>
         )}
@@ -627,6 +690,27 @@ const MetaRow = ({ icon, label, value }) => (
     </div>
   </div>
 );
+
+function cleanActionHref(href) {
+  const cleaned = String(href || "").trim();
+  const lower = cleaned.toLowerCase();
+  const placeholder = lower.replace(/[._-]+/g, " ").replace(/\s+/g, " ");
+  const emptyValues = new Set(["#", "-", "n/a", "na", "none", "null", "undefined", "no link", "no links", "no links available"]);
+
+  if (!cleaned || emptyValues.has(placeholder) || /^https?:\/\/?$/i.test(cleaned)) {
+    return "";
+  }
+
+  return cleaned;
+}
+
+function formatActionHref(href) {
+  if (/^(https?:\/\/|mailto:|tel:|\/)/i.test(href)) {
+    return href;
+  }
+
+  return `https://${href}`;
+}
 
 function normalizeMarkdown(text) {
   const lines = String(text || "").replace(/\r\n?/g, "\n").split("\n");
@@ -808,8 +892,8 @@ const RichBlocks = ({ blocks }) => {
     if (b.type === "heading") {
       const headingClassName =
         b.level <= 2
-          ? "font-display text-2xl font-black uppercase leading-tight text-[#151513] md:text-3xl"
-          : "text-lg font-black uppercase leading-tight tracking-[0.08em] text-[#151513] md:text-xl";
+          ? "font-display text-2xl font-black uppercase leading-tight text-[var(--color-ink)] md:text-3xl"
+          : "text-lg font-black uppercase leading-tight tracking-[0.08em] text-[var(--color-ink)] md:text-xl";
 
       return (
         <h3 key={idx} className={headingClassName}>
@@ -819,14 +903,14 @@ const RichBlocks = ({ blocks }) => {
     }
     if (b.type === "p") {
       return (
-        <p key={idx} className="text-sm leading-7 text-[#5d5d56] md:text-base">
+        <p key={idx} className="text-sm leading-7 text-[var(--color-muted)] md:text-base">
           <InlineMarkdown text={b.text} />
         </p>
       );
     }
     if (b.type === "ul") {
       return (
-        <ul key={idx} className="list-disc space-y-2 pl-5 text-sm leading-7 text-[#5d5d56] md:text-base">
+        <ul key={idx} className="list-disc space-y-2 pl-5 text-sm leading-7 text-[var(--color-muted)] md:text-base">
           {b.items.map((it, itemIndex) => (
             <li key={`${it}-${itemIndex}`}>
               <InlineMarkdown text={it} />
@@ -837,7 +921,7 @@ const RichBlocks = ({ blocks }) => {
     }
     if (b.type === "ol") {
       return (
-        <ol key={idx} className="list-decimal space-y-2 pl-5 text-sm leading-7 text-[#5d5d56] md:text-base">
+        <ol key={idx} className="list-decimal space-y-2 pl-5 text-sm leading-7 text-[var(--color-muted)] md:text-base">
           {b.items.map((it, itemIndex) => (
             <li key={`${it}-${itemIndex}`}>
               <InlineMarkdown text={it} />
@@ -848,25 +932,25 @@ const RichBlocks = ({ blocks }) => {
     }
     if (b.type === "blockquote") {
       return (
-        <blockquote key={idx} className="border-l-4 border-[#ff5a36] bg-[#f2efe7] py-3 pl-4 pr-3 text-sm font-bold leading-7 text-[#5d5d56] md:text-base">
+        <blockquote key={idx} className="border-l-4 border-[var(--color-accent)] bg-[var(--color-paper)] py-3 pl-4 pr-3 text-sm font-bold leading-7 text-[var(--color-muted)] md:text-base">
           <InlineMarkdown text={b.text} />
         </blockquote>
       );
     }
     if (b.type === "code") {
       return (
-        <pre key={idx} className="overflow-x-auto border-2 border-[#151513] bg-[#242421] p-4 text-xs leading-6 text-[#fbf8f0] shadow-[3px_3px_0_rgba(21,21,19,0.18)]">
+        <pre key={idx} className="overflow-x-auto border-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-4 text-xs leading-6 text-[var(--color-paper-light)] shadow-[3px_3px_0_rgb(var(--color-ink-rgb)/0.18)]">
           <code>{b.text}</code>
         </pre>
       );
     }
     if (b.type === "hr") {
-      return <hr key={idx} className="border-t-2 border-[#151513]" />;
+      return <hr key={idx} className="border-t-2 border-[var(--color-ink)]" />;
     }
     if (b.type === "section") {
       return (
-        <div key={idx} className="border-2 border-[#151513] bg-[#f2efe7] p-5 shadow-[3px_3px_0_rgba(21,21,19,0.18)] md:p-6">
-          <div className="text-[10px] font-black uppercase tracking-[0.14em] text-[#ff5a36]">{b.title}</div>
+        <div key={idx} className="border-2 border-[var(--color-ink)] bg-[var(--color-paper)] p-5 shadow-[3px_3px_0_rgb(var(--color-ink-rgb)/0.18)] md:p-6">
+          <div className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-accent)]">{b.title}</div>
           <div className="mt-3 space-y-4">
             <RichBlocks blocks={b.blocks} />
           </div>
@@ -894,7 +978,7 @@ const InlineMarkdown = ({ text }) => {
           href={href}
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noopener noreferrer" : undefined}
-          className="font-black text-[#151513] underline decoration-[#ff5a36] decoration-2 underline-offset-4 hover:text-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+          className="font-black text-[var(--color-ink)] underline decoration-[var(--color-accent)] decoration-2 underline-offset-4 hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
         >
           {link[1]}
         </a>
@@ -902,15 +986,15 @@ const InlineMarkdown = ({ text }) => {
     }
 
     if (/^\*\*[^*]+\*\*$/.test(part)) {
-      return <strong key={`${part}-${index}`} className="font-black text-[#151513]">{part.slice(2, -2)}</strong>;
+      return <strong key={`${part}-${index}`} className="font-black text-[var(--color-ink)]">{part.slice(2, -2)}</strong>;
     }
 
     if (/^`[^`]+`$/.test(part)) {
-      return <code key={`${part}-${index}`} className="border border-[#151513] bg-[#f2efe7] px-1 py-0.5 text-[0.92em] font-black text-[#151513]">{part.slice(1, -1)}</code>;
+      return <code key={`${part}-${index}`} className="border border-[var(--color-ink)] bg-[var(--color-paper)] px-1 py-0.5 text-[0.92em] font-black text-[var(--color-ink)]">{part.slice(1, -1)}</code>;
     }
 
     if (/^\*[^*]+\*$/.test(part)) {
-      return <em key={`${part}-${index}`} className="font-semibold text-[#151513]">{part.slice(1, -1)}</em>;
+      return <em key={`${part}-${index}`} className="font-semibold text-[var(--color-ink)]">{part.slice(1, -1)}</em>;
     }
 
     return part;
@@ -930,55 +1014,54 @@ function safeMarkdownHref(href) {
 export default ItemDetailPage;
 
 const DetailSkeleton = () => (
-  <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513]">
+  <div className="min-h-screen bg-[var(--color-paper)] bg-[linear-gradient(rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[var(--color-ink)]">
     <Navbar />
     <div className="pt-24">
-      <div className="relative h-[44vh] w-full animate-pulse overflow-hidden bg-[#34342f] md:h-[54vh]" />
+      <div className="relative h-[44vh] w-full animate-pulse overflow-hidden bg-[var(--color-panel-light)] md:h-[54vh]" />
     </div>
     <div className="relative z-10 mx-auto mt-8 max-w-6xl px-6 md:mt-10">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
-        <div className="border-2 border-[#151513] bg-[#fbf8f0] p-8 shadow-[6px_6px_0_#151513] md:col-span-8">
-          <div className="h-6 w-2/3 animate-pulse bg-[#d7d3c8]" />
-          <div className="mt-4 h-4 w-full animate-pulse bg-[#d7d3c8]" />
-          <div className="mt-2 h-4 w-5/6 animate-pulse bg-[#d7d3c8]" />
+        <div className="border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-8 shadow-[6px_6px_0_var(--color-ink)] md:col-span-8">
+          <div className="h-6 w-2/3 animate-pulse bg-[var(--color-paper-muted)]" />
+          <div className="mt-4 h-4 w-full animate-pulse bg-[var(--color-paper-muted)]" />
+          <div className="mt-2 h-4 w-5/6 animate-pulse bg-[var(--color-paper-muted)]" />
           <div className="mt-8 grid grid-cols-2 gap-4">
-            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
-            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
-            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
-            <div className="h-10 animate-pulse bg-[#d7d3c8]" />
+            <div className="h-10 animate-pulse bg-[var(--color-paper-muted)]" />
+            <div className="h-10 animate-pulse bg-[var(--color-paper-muted)]" />
+            <div className="h-10 animate-pulse bg-[var(--color-paper-muted)]" />
+            <div className="h-10 animate-pulse bg-[var(--color-paper-muted)]" />
           </div>
         </div>
         <div className="space-y-4 md:col-span-4">
-          <div className="border-2 border-[#151513] bg-[#242421] p-6 shadow-[6px_6px_0_#ff5a36]">
-            <div className="h-4 w-24 animate-pulse bg-[#56554f]" />
+          <div className="border-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-6 shadow-[6px_6px_0_var(--color-accent)]">
+            <div className="h-4 w-24 animate-pulse bg-[var(--color-panel-muted)]" />
             <div className="mt-4 space-y-2">
-              <div className="h-10 animate-pulse bg-[#56554f]" />
-              <div className="h-10 animate-pulse bg-[#56554f]" />
-              <div className="h-10 animate-pulse bg-[#56554f]" />
+              <div className="h-10 animate-pulse bg-[var(--color-panel-muted)]" />
+              <div className="h-10 animate-pulse bg-[var(--color-panel-muted)]" />
+              <div className="h-10 animate-pulse bg-[var(--color-panel-muted)]" />
             </div>
           </div>
-          <div className="border-2 border-[#151513] bg-[#fbf8f0] p-6">
-            <div className="h-4 w-28 animate-pulse bg-[#d7d3c8]" />
+          <div className="border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-6">
+            <div className="h-4 w-28 animate-pulse bg-[var(--color-paper-muted)]" />
             <div className="mt-4 space-y-2">
-              <div className="h-4 w-full animate-pulse bg-[#d7d3c8]" />
-              <div className="h-4 w-11/12 animate-pulse bg-[#d7d3c8]" />
-              <div className="h-4 w-10/12 animate-pulse bg-[#d7d3c8]" />
+              <div className="h-4 w-full animate-pulse bg-[var(--color-paper-muted)]" />
+              <div className="h-4 w-11/12 animate-pulse bg-[var(--color-paper-muted)]" />
+              <div className="h-4 w-10/12 animate-pulse bg-[var(--color-paper-muted)]" />
             </div>
           </div>
         </div>
       </div>
     </div>
     <div className="mx-auto mt-10 max-w-6xl px-6 pb-16">
-      <div className="border-2 border-[#151513] bg-[#fbf8f0] p-10">
-        <div className="h-6 w-36 animate-pulse bg-[#d7d3c8]" />
+      <div className="border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-10">
+        <div className="h-6 w-36 animate-pulse bg-[var(--color-paper-muted)]" />
         <div className="mt-6 space-y-3">
-          <div className="h-4 w-full animate-pulse bg-[#d7d3c8]" />
-          <div className="h-4 w-11/12 animate-pulse bg-[#d7d3c8]" />
-          <div className="h-4 w-10/12 animate-pulse bg-[#d7d3c8]" />
+          <div className="h-4 w-full animate-pulse bg-[var(--color-paper-muted)]" />
+          <div className="h-4 w-11/12 animate-pulse bg-[var(--color-paper-muted)]" />
+          <div className="h-4 w-10/12 animate-pulse bg-[var(--color-paper-muted)]" />
         </div>
       </div>
     </div>
     <Footer />
   </div>
 );
-

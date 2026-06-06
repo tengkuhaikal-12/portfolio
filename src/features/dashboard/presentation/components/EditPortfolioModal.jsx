@@ -3,6 +3,7 @@ import { IoCloseOutline } from "react-icons/io5";
 import AlertModal from "@/shared/components/AlertModal";
 import ConfirmModal from "@/shared/components/ConfirmModal";
 import { updatePortfolioItem } from "@/features/dashboard/data/portfolioService";
+import { dataUrlToFile, isDataUrlImage, uploadImage, validateImageFile } from "@/shared/services/firebase/imageUpload";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -49,9 +50,12 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
   const [alertState, setAlertState] = useState({ open: false, title: "", message: "" });
   const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
   const [initialSnapshot, setInitialSnapshot] = useState(null);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [imageUploadProgress, setImageUploadProgress] = useState(0);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || !isOpen) return;
 
     const nextForm = {
       title: data.title || "",
@@ -64,6 +68,9 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
 
     setFormData(nextForm);
     setTechStack(Array.isArray(data.techStack) ? data.techStack : []);
+    setSelectedImageFile(null);
+    setImagePreviewUrl(data.image || "");
+    setImageUploadProgress(0);
 
     let nextStartMonth = "Jan";
     let nextStartYear = String(currentYear);
@@ -100,8 +107,9 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
       startYear: nextStartYear,
       endMonth: nextEndMonth,
       endYear: nextEndYear,
+      selectedImage: "",
     });
-  }, [data]);
+  }, [data, isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -111,6 +119,14 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
+
   const currentSnapshot = useMemo(
     () => ({
       formData,
@@ -119,8 +135,9 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
       startYear,
       endMonth,
       endYear,
+      selectedImage: selectedImageFile ? `${selectedImageFile.name}:${selectedImageFile.size}:${selectedImageFile.lastModified}` : "",
     }),
-    [formData, techStack, startMonth, startYear, endMonth, endYear]
+    [formData, techStack, startMonth, startYear, endMonth, endYear, selectedImageFile]
   );
 
   const isDirty = initialSnapshot ? JSON.stringify(currentSnapshot) !== JSON.stringify(initialSnapshot) : false;
@@ -128,7 +145,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
   if (!isOpen || !data) return null;
 
   const inputClass =
-    "w-full border-2 border-[#151513] bg-[#f2efe7] p-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2";
+    "w-full border-2 border-[var(--color-ink)] bg-[var(--color-paper)] p-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2";
   const imagePosition = parseImagePosition(formData.imagePosition);
 
   const handleAddTech = (event) => {
@@ -153,9 +170,23 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => setFormData((current) => ({ ...current, image: reader.result }));
+    try {
+      validateImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setSelectedImageFile(file);
+      setImagePreviewUrl(previewUrl);
+      setImageUploadProgress(0);
+    } catch (error) {
+      event.target.value = "";
+      setSelectedImageFile(null);
+      setImagePreviewUrl(formData.image || "");
+      setImageUploadProgress(0);
+      setAlertState({
+        open: true,
+        title: "Image not uploaded",
+        message: error?.message || "Please choose a valid image.",
+      });
+    }
   };
 
   const updateImagePosition = (axis, value) => {
@@ -190,8 +221,24 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
           ? `${startMonth} ${startYear} - Present`
           : `${startMonth} ${startYear} - ${endMonth} ${endYear}`;
 
+      let imageUrl = formData.image;
+      if (selectedImageFile) {
+        setImageUploadProgress(1);
+        imageUrl = await uploadImage(selectedImageFile, {
+          folder: `portfolio/${collectionName}/${data.id}`,
+          onProgress: setImageUploadProgress,
+        });
+      } else if (isDataUrlImage(imageUrl)) {
+        setImageUploadProgress(1);
+        imageUrl = await uploadImage(dataUrlToFile(imageUrl, `${data.id || "image"}.jpg`), {
+          folder: `portfolio/${collectionName}/${data.id}`,
+          onProgress: setImageUploadProgress,
+        });
+      }
+
       const payload = {
         ...formData,
+        image: imageUrl,
         duration,
         sortDate: sortValue,
         techStack: collectionName === "projects" ? techStack : [],
@@ -208,7 +255,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#151513]/80 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgb(var(--color-ink-rgb)/0.8)] p-4 backdrop-blur-sm">
       <AlertModal
         isOpen={alertState.open}
         title={alertState.title}
@@ -230,14 +277,14 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
         }}
       />
 
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[8px_8px_0_#ff5a36]">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0]">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] text-[var(--color-ink)] shadow-[8px_8px_0_var(--color-accent)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-6 text-[var(--color-paper-light)]">
           <h2 className="font-display text-2xl font-black uppercase tracking-tight">Edit {collectionName}</h2>
           <button
             type="button"
             onClick={requestClose}
             disabled={loading}
-            className="cursor-pointer border-2 border-[#fbf8f0] bg-[#ff5a36] p-1 text-[#151513] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] disabled:opacity-60"
+            className="cursor-pointer border-2 border-[var(--color-paper-light)] bg-[var(--color-accent)] p-1 text-[var(--color-ink)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-60"
           >
             <IoCloseOutline size={32} />
           </button>
@@ -246,7 +293,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
         <form onSubmit={handleSubmit} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Title</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">Title</label>
               <input
                 required
                 className={inputClass}
@@ -256,7 +303,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div>
-              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Subtitle / Role</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">Subtitle / Role</label>
               <input
                 required
                 className={inputClass}
@@ -266,7 +313,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div className="space-y-4">
-              <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Duration</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">Duration</label>
               <div className="grid grid-cols-2 gap-2">
                 <select className={inputClass} value={startMonth} onChange={(event) => setStartMonth(event.target.value)}>
                   {MONTHS.map((month) => (
@@ -313,7 +360,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
           <div className="space-y-4">
             {collectionName === "projects" ? (
               <div>
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Tech Stack (Enter to add)</label>
+                <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">Tech Stack (Enter to add)</label>
                 <input
                   className={inputClass}
                   value={techInput}
@@ -322,9 +369,9 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                 />
                 <div className="flex flex-wrap gap-2 mt-2">
                   {techStack.map((tech, index) => (
-                    <span key={`${tech}-${index}`} className="border border-[#151513] bg-[#f2efe7] px-2 py-1 text-[10px] font-bold">
+                    <span key={`${tech}-${index}`} className="border border-[var(--color-ink)] bg-[var(--color-paper)] px-2 py-1 text-[10px] font-bold">
                       {tech}
-                      <button type="button" onClick={() => removeTech(index)} className="ml-1 text-red-500">
+                      <button type="button" onClick={() => removeTech(index)} className="ml-1 text-[var(--color-danger)]">
                         x
                       </button>
                     </span>
@@ -334,7 +381,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             ) : null}
 
             <div>
-              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Description</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">Description</label>
               <textarea
                 rows="4"
                 className={inputClass}
@@ -344,10 +391,10 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div>
-              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Links</label>
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">Links</label>
               <div className="space-y-3">
                 {(formData.links || []).map((link, index) => (
-                  <div key={`${link?.href || "link"}-${index}`} className="space-y-2 border-2 border-[#151513] bg-[#f2efe7] p-3">
+                  <div key={`${link?.href || "link"}-${index}`} className="space-y-2 border-2 border-[var(--color-ink)] bg-[var(--color-paper)] p-3">
                     <input
                       className={inputClass}
                       placeholder="Label (GitHub, Website, Demo...)"
@@ -386,7 +433,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                         const links = (formData.links || []).filter((_, itemIndex) => itemIndex !== index);
                         setFormData((current) => ({ ...current, links }));
                       }}
-                      className="text-sm font-black uppercase text-[#d84833] underline decoration-2 underline-offset-4"
+                      className="text-sm font-black uppercase text-[var(--color-danger)] underline decoration-2 underline-offset-4"
                     >
                       Remove
                     </button>
@@ -399,7 +446,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                     const links = [...(formData.links || []), { label: "", href: "", kind: "visit" }];
                     setFormData((current) => ({ ...current, links }));
                   }}
-                  className="w-full border-2 border-[#151513] bg-[#f2efe7] py-3 text-sm font-black uppercase tracking-[0.1em] shadow-[3px_3px_0_#151513] transition hover:bg-[#ff5a36]"
+                  className="w-full border-2 border-[var(--color-ink)] bg-[var(--color-paper)] py-3 text-sm font-black uppercase tracking-[0.1em] shadow-[3px_3px_0_var(--color-ink)] transition hover:bg-[var(--color-accent)]"
                 >
                   Add Link
                 </button>
@@ -407,13 +454,19 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
             </div>
 
             <div>
-              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">Update Image</label>
-              <input type="file" onChange={handleImage} className="text-xs cursor-pointer block w-full" />
-              {formData.image ? (
-                <div className="mt-4 space-y-4 border-2 border-[#151513] bg-[#f2efe7] p-4 shadow-[4px_4px_0_#151513]">
-                  <div className="overflow-hidden border-2 border-[#151513] bg-[#242421]">
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">Update Image</label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImage}
+                disabled={loading}
+                className="block w-full cursor-pointer text-xs disabled:opacity-60"
+              />
+              {imagePreviewUrl || formData.image ? (
+                <div className="mt-4 space-y-4 border-2 border-[var(--color-ink)] bg-[var(--color-paper)] p-4 shadow-[4px_4px_0_var(--color-ink)]">
+                  <div className="overflow-hidden border-2 border-[var(--color-ink)] bg-[var(--color-panel)]">
                     <img
-                      src={formData.image}
+                      src={imagePreviewUrl || formData.image}
                       className="h-48 w-full object-cover grayscale"
                       style={{ objectPosition: formData.imagePosition }}
                       alt="preview"
@@ -422,10 +475,10 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
 
                   <div>
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <label className="text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+                      <label className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">
                         Image focus
                       </label>
-                      <span className="border border-[#151513] bg-[#fbf8f0] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#5d5d56]">
+                      <span className="border border-[var(--color-ink)] bg-[var(--color-paper-light)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--color-muted)]">
                         {formData.imagePosition}
                       </span>
                     </div>
@@ -436,8 +489,8 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                           key={preset.label}
                           type="button"
                           onClick={() => setFormData((current) => ({ ...current, imagePosition: preset.value }))}
-                          className={`border-2 border-[#151513] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] shadow-[2px_2px_0_#151513] transition hover:bg-[#ff5a36] ${
-                            formData.imagePosition === preset.value ? "bg-[#ff5a36]" : "bg-[#fbf8f0]"
+                          className={`border-2 border-[var(--color-ink)] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] shadow-[2px_2px_0_var(--color-ink)] transition hover:bg-[var(--color-accent)] ${
+                            formData.imagePosition === preset.value ? "bg-[var(--color-accent)]" : "bg-[var(--color-paper-light)]"
                           }`}
                         >
                           {preset.label}
@@ -447,7 +500,22 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                   </div>
 
                   <div className="space-y-3">
-                    <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+                    {selectedImageFile || (isDataUrlImage(formData.image) && loading) ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-muted)]">
+                          <span>{selectedImageFile?.name || "Migrating legacy image"}</span>
+                          <span>{imageUploadProgress}%</span>
+                        </div>
+                        <div className="h-2 border border-[var(--color-ink)] bg-[var(--color-paper-light)]">
+                          <div
+                            className="h-full bg-[var(--color-accent)] transition-[width]"
+                            style={{ width: `${imageUploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">
                       Move left / right
                     </label>
                     <input
@@ -456,9 +524,9 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                       max="100"
                       value={imagePosition.x}
                       onChange={(event) => updateImagePosition("x", event.target.value)}
-                      className="w-full accent-[#ff5a36]"
+                      className="w-full accent-[var(--color-accent)]"
                     />
-                    <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#5d5d56]">
+                    <label className="block text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-muted)]">
                       Move up / down
                     </label>
                     <input
@@ -467,7 +535,7 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
                       max="100"
                       value={imagePosition.y}
                       onChange={(event) => updateImagePosition("y", event.target.value)}
-                      className="w-full accent-[#ff5a36]"
+                      className="w-full accent-[var(--color-accent)]"
                     />
                   </div>
                 </div>
@@ -478,9 +546,13 @@ const EditPortfolioModal = ({ isOpen, onClose, data, collectionName, onUpdateSuc
           <button
             disabled={loading}
             type="submit"
-            className="w-full border-2 border-[#151513] bg-[#ff5a36] py-4 font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_#151513] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36] disabled:opacity-60 md:col-span-2"
+            className="w-full border-2 border-[var(--color-ink)] bg-[var(--color-accent)] py-4 font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_var(--color-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-60 md:col-span-2"
           >
-            {loading ? "Saving changes..." : "Update portfolio"}
+            {loading && (selectedImageFile || isDataUrlImage(formData.image)) && imageUploadProgress < 100
+              ? `Uploading image ${imageUploadProgress}%...`
+              : loading
+                ? "Saving changes..."
+                : "Update portfolio"}
           </button>
         </form>
       </div>

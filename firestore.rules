@@ -11,7 +11,7 @@ service cloud.firestore {
     // - description: string (required, <= 12000)
     // - duration: string (required, <= 64)
     // - sortDate: number (required)
-    // - image: string (optional, <= 900000)
+    // - image: string (optional, Firebase Storage download URL, <= 2000)
     // - imagePosition: string (optional, CSS object-position as "0-100% 0-100%")
     // - techStack: list (optional, <= 50 items)
     // - links: list (optional, <= 25 items)
@@ -103,7 +103,7 @@ service cloud.firestore {
         validRequiredString('description', 1, 12000) &&
         validRequiredString('duration', 1, 64) &&
         request.resource.data.sortDate is number &&
-        validOptionalString('image', 900000) &&
+        validOptionalString('image', 2000) &&
         validOptionalImagePosition() &&
         validOptionalList('techStack', 50) &&
         validOptionalList('links', 25) &&

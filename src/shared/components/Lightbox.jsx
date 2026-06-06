@@ -64,7 +64,7 @@ const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-[#151513]/90 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgb(var(--color-ink-rgb)/0.9)] p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -74,36 +74,36 @@ const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
       <div className="relative w-full max-w-5xl">
         <button
           onClick={onClose}
-          className="absolute -top-12 right-0 inline-flex cursor-pointer items-center gap-2 border-2 border-[#fbf8f0] bg-[#ff5a36] p-1 text-[#151513] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+          className="absolute -top-12 right-0 inline-flex cursor-pointer items-center gap-2 border-2 border-[var(--color-paper-light)] bg-[var(--color-accent)] p-1 text-[var(--color-ink)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
           aria-label="Close"
         >
           <IoCloseOutline size={26} />
         </button>
 
         <div
-          className="relative w-full overflow-hidden border-2 border-[#fbf8f0] bg-[#151513] shadow-[8px_8px_0_#ff5a36]"
+          className="relative w-full overflow-hidden border-2 border-[var(--color-paper-light)] bg-[var(--color-ink)] shadow-[8px_8px_0_var(--color-accent)]"
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          <img src={current.src} alt={`Image ${index + 1}`} className="max-h-[78vh] w-full bg-[#151513] object-contain" />
+          <img src={current.src} alt={`Image ${index + 1}`} className="max-h-[78vh] w-full bg-[var(--color-ink)] object-contain" />
 
           {list.length > 1 ? (
             <>
               <button
                 onClick={prev}
-                className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[3px_3px_0_#ff5a36] transition hover:bg-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] text-[var(--color-ink)] shadow-[3px_3px_0_var(--color-accent)] transition hover:bg-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                 aria-label="Previous image"
               >
                 <IoChevronBackOutline size={22} />
               </button>
               <button
                 onClick={next}
-                className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center border-2 border-[#151513] bg-[#fbf8f0] text-[#151513] shadow-[3px_3px_0_#ff5a36] transition hover:bg-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] text-[var(--color-ink)] shadow-[3px_3px_0_var(--color-accent)] transition hover:bg-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                 aria-label="Next image"
               >
                 <IoChevronForwardOutline size={22} />
               </button>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 border-2 border-[#151513] bg-[#fbf8f0] px-3 py-1.5 text-xs font-black uppercase tracking-widest text-[#151513] shadow-[3px_3px_0_#ff5a36]">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] px-3 py-1.5 text-xs font-black uppercase tracking-widest text-[var(--color-ink)] shadow-[3px_3px_0_var(--color-accent)]">
                 {index + 1} / {list.length}
               </div>
             </>

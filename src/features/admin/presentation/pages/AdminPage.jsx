@@ -6,6 +6,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { createPortfolioEntry } from "@/features/admin/data/adminContentService";
 import { logout } from "@/features/auth/services/authService";
 import { ROUTES } from "@/shared/constants/routes";
+import { uploadImage, validateImageFile } from "@/shared/services/firebase/imageUpload";
 import {
   fetchVisitorAlertSettings,
   upsertVisitorAlertWhatsappNumber,
@@ -40,6 +41,9 @@ const AdminPage = () => {
     description: "",
     image: "",
   });
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [imageUploadProgress, setImageUploadProgress] = useState(0);
 
   const { isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -90,6 +94,14 @@ const AdminPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
+
   const handleAddTech = (event) => {
     if (event.key !== "Enter" && event.key !== ",") return;
 
@@ -109,9 +121,24 @@ const AdminPage = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => setFormData((prev) => ({ ...prev, image: reader.result }));
+    try {
+      validateImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setSelectedImageFile(file);
+      setImagePreviewUrl(previewUrl);
+      setImageUploadProgress(0);
+      setFormData((prev) => ({ ...prev, image: "" }));
+    } catch (error) {
+      event.target.value = "";
+      setSelectedImageFile(null);
+      setImagePreviewUrl("");
+      setImageUploadProgress(0);
+      setAlertState({
+        open: true,
+        title: "Image not uploaded",
+        message: error?.message || "Please choose a valid image.",
+      });
+    }
   };
 
   const handleSave = async (event) => {
@@ -138,8 +165,18 @@ const AdminPage = () => {
           ? `${startMonth} ${startYear} - Present`
           : `${startMonth} ${startYear} - ${endMonth} ${endYear}`;
 
+      let imageUrl = formData.image;
+      if (selectedImageFile) {
+        setImageUploadProgress(1);
+        imageUrl = await uploadImage(selectedImageFile, {
+          folder: `portfolio/${activeTab}`,
+          onProgress: setImageUploadProgress,
+        });
+      }
+
       await createPortfolioEntry(activeTab, {
         ...formData,
+        image: imageUrl,
         duration,
         sortDate: sortValue,
         techStack: activeTab === "projects" ? techStack : [],
@@ -147,6 +184,9 @@ const AdminPage = () => {
 
       setAlertState({ open: true, title: "Saved", message: `Successfully added to ${activeTab}.` });
       setFormData({ title: "", subtitle: "", description: "", image: "" });
+      setSelectedImageFile(null);
+      setImagePreviewUrl("");
+      setImageUploadProgress(0);
       setTechStack([]);
       setTechInput("");
     } catch (error) {
@@ -203,10 +243,10 @@ const AdminPage = () => {
   };
 
   const inputClassNames =
-    "w-full border-2 border-[#151513] bg-[#f2efe7] p-3 outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a36] focus-visible:ring-offset-2";
+    "w-full border-2 border-[var(--color-ink)] bg-[var(--color-paper)] p-3 outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] p-4 text-[#151513] md:p-10">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-paper)] bg-[linear-gradient(rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px)] [background-size:32px_32px] p-4 text-[var(--color-ink)] md:p-10">
       <AlertModal
         isOpen={alertState.open}
         title={alertState.title}
@@ -214,38 +254,38 @@ const AdminPage = () => {
         onClose={() => setAlertState({ open: false, title: "", message: "" })}
       />
 
-      <div className="w-full max-w-4xl overflow-hidden border-2 border-[#151513] bg-[#fbf8f0] shadow-[8px_8px_0_#151513]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0]">
+      <div className="w-full max-w-4xl overflow-hidden border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] shadow-[8px_8px_0_var(--color-ink)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-6 text-[var(--color-paper-light)]">
           <h1 className="font-display text-3xl font-black uppercase tracking-tight">Portfolio Manager</h1>
           <div className="flex items-center gap-2">
             <Link
               to={ROUTES.home}
-              className="border-2 border-[#fbf8f0] bg-[#fbf8f0] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#ff5a36] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_#ff5a36]"
+              className="border-2 border-[var(--color-paper-light)] bg-[var(--color-paper-light)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-ink)] shadow-[3px_3px_0_var(--color-accent)] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0_var(--color-accent)]"
             >
               Go Home
             </Link>
             <Link
               to={ROUTES.adminAnalytics}
-              className="border-2 border-[#fbf8f0] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] shadow-[3px_3px_0_#ff5a36] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[#ff5a36] hover:text-[#151513] hover:shadow-[1px_1px_0_#ff5a36]"
+              className="border-2 border-[var(--color-paper-light)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-paper-light)] shadow-[3px_3px_0_var(--color-accent)] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-[var(--color-accent)] hover:text-[var(--color-ink)] hover:shadow-[1px_1px_0_var(--color-accent)]"
             >
               Analytics
             </Link>
             <button
               onClick={handleLogout}
-              className="flex cursor-pointer items-center gap-2 border-2 border-[#fbf8f0] bg-[#d84833] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#fbf8f0] transition hover:-translate-y-0.5"
+              className="flex cursor-pointer items-center gap-2 border-2 border-[var(--color-paper-light)] bg-[var(--color-danger)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-paper-light)] transition hover:-translate-y-0.5"
             >
               <IoPowerOutline size={20} /> Logout
             </button>
           </div>
         </div>
 
-        <div className="flex overflow-x-auto bg-[#242421]">
+        <div className="flex overflow-x-auto bg-[var(--color-panel)]">
           {["projects", "experience", "education", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-4 capitalize font-bold transition border-b-4 ${
-                activeTab === tab ? "border-[#151513] bg-[#ff5a36] text-[#151513]" : "border-transparent text-[#aaa89f] hover:text-[#fbf8f0]"
+                activeTab === tab ? "border-[var(--color-ink)] bg-[var(--color-accent)] text-[var(--color-ink)]" : "border-transparent text-[var(--color-muted-light)] hover:text-[var(--color-paper-light)]"
               }`}
             >
               {tab}
@@ -255,7 +295,7 @@ const AdminPage = () => {
 
         {activeTab === "settings" ? (
           <form onSubmit={handleSettingsSave} className="p-8 space-y-6">
-            <div className="space-y-4 border-2 border-[#151513] bg-[#f2efe7] p-5 shadow-[4px_4px_0_rgba(21,21,19,0.18)]">
+            <div className="space-y-4 border-2 border-[var(--color-ink)] bg-[var(--color-paper)] p-5 shadow-[4px_4px_0_rgb(var(--color-ink-rgb)/0.18)]">
               <h2 className="text-lg font-black uppercase tracking-widest">Visitor Alert Settings</h2>
               <p className="text-sm text-text/70">
                 Set the admin WhatsApp number that receives first-visit alerts.
@@ -282,7 +322,7 @@ const AdminPage = () => {
             <button
               disabled={settingsLoading}
               type="submit"
-              className="w-full border-2 border-[#151513] bg-[#ff5a36] py-4 font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-60"
+              className="w-full border-2 border-[var(--color-ink)] bg-[var(--color-accent)] py-4 font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-60"
             >
               {settingsLoading ? "Updating..." : "Update WhatsApp Number"}
             </button>
@@ -366,9 +406,9 @@ const AdminPage = () => {
                   />
                   <div className="flex flex-wrap gap-2 mt-3">
                     {techStack.map((tech, index) => (
-                      <span key={`${tech}-${index}`} className="flex items-center gap-1 border border-[#151513] bg-[#f2efe7] px-3 py-1 text-xs font-bold">
+                      <span key={`${tech}-${index}`} className="flex items-center gap-1 border border-[var(--color-ink)] bg-[var(--color-paper)] px-3 py-1 text-xs font-bold">
                         {tech}
-                        <button type="button" onClick={() => removeTech(index)} className="text-red-500">
+                        <button type="button" onClick={() => removeTech(index)} className="text-[var(--color-danger)]">
                           x
                         </button>
                       </span>
@@ -390,17 +430,51 @@ const AdminPage = () => {
 
               <div>
                 <label className="block text-xs font-black text-text/70 uppercase">Media Upload</label>
-                <input type="file" onChange={handleImage} className="text-sm cursor-pointer" />
-                {formData.image ? <img src={formData.image} className="mt-2 h-20 border-2 border-[#151513]" alt="preview" /> : null}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImage}
+                  disabled={loading}
+                  className="block w-full cursor-pointer text-sm disabled:opacity-60"
+                />
+
+                {imagePreviewUrl || formData.image ? (
+                  <div className="mt-3 space-y-3">
+                    <img
+                      src={imagePreviewUrl || formData.image}
+                      className="h-24 w-full border-2 border-[var(--color-ink)] object-cover"
+                      alt="preview"
+                    />
+
+                    {selectedImageFile ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[0.12em] text-text/70">
+                          <span>{selectedImageFile.name}</span>
+                          <span>{imageUploadProgress}%</span>
+                        </div>
+                        <div className="h-2 border border-[var(--color-ink)] bg-[var(--color-paper)]">
+                          <div
+                            className="h-full bg-[var(--color-accent)] transition-[width]"
+                            style={{ width: `${imageUploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             </div>
 
             <button
               disabled={loading}
               type="submit"
-              className="w-full border-2 border-[#151513] bg-[#ff5a36] py-4 font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-60 md:col-span-2"
+              className="w-full border-2 border-[var(--color-ink)] bg-[var(--color-accent)] py-4 font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_var(--color-ink)] transition hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-60 md:col-span-2"
             >
-              {loading ? "Syncing..." : "Save Entry"}
+              {loading && selectedImageFile && imageUploadProgress < 100
+                ? `Uploading image ${imageUploadProgress}%...`
+                : loading
+                  ? "Syncing..."
+                  : "Save Entry"}
             </button>
           </form>
         )}

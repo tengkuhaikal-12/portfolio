@@ -27,19 +27,19 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-[#242421] px-6 text-center text-[#fbf8f0]">
-        <h1 className="border-2 border-[#fbf8f0] bg-[#ff5a36] px-6 py-4 font-display text-3xl font-black uppercase tracking-tight text-[#151513] shadow-[6px_6px_0_#fbf8f0]">Checking access...</h1>
-        <p className="mt-8 text-xs font-black uppercase tracking-[0.14em] text-[#aaa89f]">Please wait.</p>
+      <div className="flex h-screen flex-col items-center justify-center bg-[var(--color-panel)] px-6 text-center text-[var(--color-paper-light)]">
+        <h1 className="border-2 border-[var(--color-paper-light)] bg-[var(--color-accent)] px-6 py-4 font-display text-3xl font-black uppercase tracking-tight text-[var(--color-ink)] shadow-[6px_6px_0_var(--color-paper-light)]">Checking access...</h1>
+        <p className="mt-8 text-xs font-black uppercase tracking-[0.14em] text-[var(--color-muted-light)]">Please wait.</p>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-[#242421] px-6 text-center text-[#fbf8f0]">
-        <h1 className="border-2 border-[#fbf8f0] bg-[#d84833] px-6 py-4 font-display text-3xl font-black uppercase tracking-tight shadow-[6px_6px_0_#fbf8f0]">Access denied (Admin only)</h1>
-        <p className="mt-8 text-xs font-black uppercase tracking-[0.14em] text-[#aaa89f]">
-          Redirecting to home in <span className="font-bold text-[#ff5a36]">{time}</span> s...
+      <div className="flex h-screen flex-col items-center justify-center bg-[var(--color-panel)] px-6 text-center text-[var(--color-paper-light)]">
+        <h1 className="border-2 border-[var(--color-paper-light)] bg-[var(--color-danger)] px-6 py-4 font-display text-3xl font-black uppercase tracking-tight shadow-[6px_6px_0_var(--color-paper-light)]">Access denied (Admin only)</h1>
+        <p className="mt-8 text-xs font-black uppercase tracking-[0.14em] text-[var(--color-muted-light)]">
+          Redirecting to home in <span className="font-bold text-[var(--color-accent)]">{time}</span> s...
         </p>
       </div>
     );

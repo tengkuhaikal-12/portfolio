@@ -1,0 +1,49 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function ownerEmail() {
+      let localPart = 'haikaltengku836';
+      let domainPart = 'gmail.com';
+      return localPart + '@' + domainPart;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        request.auth.token.email is string &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.email == ownerEmail();
+    }
+
+    function isPortfolioCollection(collectionName) {
+      return collectionName == 'projects' ||
+        collectionName == 'experience' ||
+        collectionName == 'education';
+    }
+
+    function isValidImageUpload() {
+      return request.resource != null &&
+        request.resource.size <= 4 * 1024 * 1024 &&
+        (
+          request.resource.contentType == 'image/jpeg' ||
+          request.resource.contentType == 'image/png' ||
+          request.resource.contentType == 'image/webp'
+        );
+    }
+
+    match /portfolio/{collectionName}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isAdmin() &&
+        isPortfolioCollection(collectionName) &&
+        isValidImageUpload();
+      allow delete: if isAdmin() && isPortfolioCollection(collectionName);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

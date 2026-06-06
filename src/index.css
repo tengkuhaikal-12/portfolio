@@ -1,28 +1,46 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "tailwindcss";
 
+/* Change the app palette here. React/Tailwind classes read these tokens. */
 @theme {
   --color-ink: #151513;
   --color-paper: #f2efe7;
   --color-paper-light: #fbf8f0;
   --color-panel: #242421;
   --color-panel-light: #34342f;
+  --color-panel-soft: #2e2e2a;
+  --color-panel-muted: #56554f;
+  --color-footer: #191917;
   --color-muted: #5d5d56;
+  --color-muted-light: #aaa89f;
+  --color-border-muted: #77756e;
+  --color-paper-muted: #d7d3c8;
+  --color-copy-muted: #c7c5bd;
   --color-accent: #ff5a36;
   --color-danger: #d84833;
+  --color-danger-light: #ff8065;
   --color-warning: #db9d1c;
   --color-success: #36a166;
+  --color-success-dark: #246f46;
+  --color-loading-backdrop: #000000;
+  --color-loading-bg: #070b13;
+  --color-loading-text: #ffffff;
 
-  --color-bg: #f2efe7;
-  --color-text: #151513;
+  --color-ink-rgb: 21 21 19;
+  --color-paper-rgb: 242 239 231;
+  --color-paper-light-rgb: 251 248 240;
+  --color-white-rgb: 255 255 255;
+
+  --color-bg: var(--color-paper);
+  --color-text: var(--color-ink);
 
   --font-body:"Inter", Arial, Helvetica, sans-serif;
   --font-display: "Poppins", "Arial Black", Arial, Helvetica, sans-serif;
 
-  --shadow-hard: 6px 6px 0 #151513;
-  --shadow-hard-sm: 3px 3px 0 #151513;
-  --shadow-hard-light: 7px 7px 0 rgba(21, 21, 19, 0.18);
-  --shadow-hard-accent: 6px 6px 0 #ff5a36;
+  --shadow-hard: 6px 6px 0 var(--color-ink);
+  --shadow-hard-sm: 3px 3px 0 var(--color-ink);
+  --shadow-hard-light: 7px 7px 0 rgb(var(--color-ink-rgb) / 0.18);
+  --shadow-hard-accent: 6px 6px 0 var(--color-accent);
 }
 
 @media (hover: none) and (pointer: coarse) {

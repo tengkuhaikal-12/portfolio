@@ -20,7 +20,7 @@ const ViewAllPage = ({ config }) => {
   if (loading) return <Loading />;
 
   return (
-    <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513] selection:bg-[#ff5a36] selection:text-[#151513]">
+    <div className="min-h-screen bg-[var(--color-paper)] bg-[linear-gradient(rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-ink-rgb)/0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[var(--color-ink)] selection:bg-[var(--color-accent)] selection:text-[var(--color-ink)]">
       <Navbar />
 
       <ConfirmModal
@@ -58,8 +58,8 @@ const ViewAllPage = ({ config }) => {
               ))}
             </div>
           ) : (
-            <div className="mt-10 border-2 border-[#151513] bg-[#fbf8f0] p-8 text-center shadow-[6px_6px_0_#151513]">
-              <p className="text-sm font-black uppercase tracking-[0.14em] text-[#151513]">No entries yet.</p>
+            <div className="mt-10 border-2 border-[var(--color-ink)] bg-[var(--color-paper-light)] p-8 text-center shadow-[6px_6px_0_var(--color-ink)]">
+              <p className="text-sm font-black uppercase tracking-[0.14em] text-[var(--color-ink)]">No entries yet.</p>
             </div>
           )}
         </Container>
