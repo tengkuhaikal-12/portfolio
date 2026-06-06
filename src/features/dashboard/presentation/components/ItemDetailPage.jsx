@@ -20,7 +20,7 @@ import {
 import { FaGithub } from "react-icons/fa";
 import { appendGalleryImages, fetchPortfolioItem, saveGallery as persistGallery } from "@/features/dashboard/data/portfolioService";
 
-const ItemDetailPage = ({ collectionName, kindLabel }) => {
+const ItemDetailPage = ({ collectionName, kindLabel, descriptionFormat = "richText" }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
@@ -152,8 +152,8 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
 
   const formattedDescription = useMemo(() => {
     const text = (item?.description || "").toString();
-    return normalizeRichText(text);
-  }, [item]);
+    return descriptionFormat === "markdown" ? normalizeMarkdown(text) : normalizeRichText(text);
+  }, [descriptionFormat, item]);
 
   const openLightbox = (index) => setSelectedImageIndex(index);
   const closeLightbox = () => setSelectedImageIndex(null);
@@ -283,6 +283,8 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
   const location = item?.location || "";
   const tags = collectionName === "projects" ? item?.techStack || item?.tags || [] : item?.tags || [];
   const defaultThumbnailIndex = collectionName === "projects" ? 0 : collectionName === "experience" ? 1 : 2;
+  const hasLinkActions = actions.length > 0;
+  const hasSidebar = hasLinkActions || isAdmin;
 
   return (
     <div className="min-h-screen bg-[#f2efe7] bg-[linear-gradient(rgba(21,21,19,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,19,0.045)_1px,transparent_1px)] [background-size:32px_32px] font-body text-[#151513] selection:bg-[#ff5a36]">
@@ -326,7 +328,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
       {/* MAIN INFO */}
       <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 md:mt-14">
         <div className="grid grid-cols-1 gap-7 md:grid-cols-12">
-          <div className="overflow-hidden border-2 border-[#151513] bg-[#fbf8f0] shadow-[6px_6px_0_#151513] md:col-span-8">
+          <div className={`overflow-hidden border-2 border-[#151513] bg-[#fbf8f0] shadow-[6px_6px_0_#151513] ${hasSidebar ? "md:col-span-8" : "md:col-span-12"}`}>
             <div className="p-6 md:p-9">
               <p className="mb-5 text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">{kindLabel} / Overview</p>
               <h1 className="break-words font-display text-[clamp(2.8rem,7vw,5.5rem)] font-black uppercase leading-[0.85] tracking-[-0.06em]">{title}</h1>
@@ -363,16 +365,16 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
             </div>
           </div>
 
-          <div className="space-y-4 md:col-span-4">
-            <div className="space-y-4">
-              <div className="h-full border-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0] shadow-[6px_6px_0_#ff5a36]">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">
-                  Actions
-                </p>
+          {hasSidebar ? (
+            <div className="space-y-4 md:col-span-4">
+              {hasLinkActions ? (
+                <div className="h-full border-2 border-[#151513] bg-[#242421] p-6 text-[#fbf8f0] shadow-[6px_6px_0_#ff5a36]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ff5a36]">
+                    Actions
+                  </p>
 
-                <div className="mt-4 flex flex-col gap-2">
-                  {actions.length ? (
-                    actions.map((action) => {
+                  <div className="mt-4 flex flex-col gap-2">
+                    {actions.map((action) => {
                       const isGithub = action.kind === "github";
 
                       return (
@@ -387,7 +389,7 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                           rel="noopener noreferrer"
                           className="flex w-full items-center justify-between gap-3 border-2 border-[#77756e] bg-[#2e2e2a] px-4 py-3 text-sm font-black transition hover:-translate-y-0.5 hover:border-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
                         >
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex min-w-0 items-center gap-3">
                             {isGithub ? (
                               <FaGithub className="shrink-0 text-lg" />
                             ) : (
@@ -404,28 +406,29 @@ const ItemDetailPage = ({ collectionName, kindLabel }) => {
                               </p>
                             </div>
                           </div>
-
                         </a>
                       );
-                    })
-                  ) : (
-                    <div className="text-sm text-[#aaa89f]">
-                      No links available.
-                    </div>
-                  )}
-
-                  {isAdmin ? (
-                    <button
-                      onClick={() => setIsModalOpen(true)}
-                      className="mt-2 inline-flex w-full items-center justify-center gap-2 border-2 border-[#151513] bg-[#ff5a36] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#fbf8f0] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
-                    >
-                      <IoPencilOutline /> Edit
-                    </button>
-                  ) : null}
+                    })}
+                  </div>
                 </div>
-              </div>
+              ) : null}
+
+              {isAdmin ? (
+                <div className="border-2 border-[#151513] bg-[#fbf8f0] p-6 shadow-[6px_6px_0_rgba(21,21,19,0.18)]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#5d5d56]">
+                    Admin
+                  </p>
+
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 border-2 border-[#151513] bg-[#ff5a36] px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-[#151513] shadow-[3px_3px_0_#151513] transition hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+                  >
+                    <IoPencilOutline /> Edit
+                  </button>
+                </div>
+              ) : null}
             </div>
-          </div>
+          ) : null}
         </div>
       </section>
 
@@ -625,6 +628,115 @@ const MetaRow = ({ icon, label, value }) => (
   </div>
 );
 
+function normalizeMarkdown(text) {
+  const lines = String(text || "").replace(/\r\n?/g, "\n").split("\n");
+  const blocks = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      i += 1;
+      continue;
+    }
+
+    if (/^```/.test(trimmed)) {
+      const language = trimmed.replace(/^```/, "").trim();
+      const codeLines = [];
+      i += 1;
+
+      while (i < lines.length && !/^```/.test(lines[i].trim())) {
+        codeLines.push(lines[i]);
+        i += 1;
+      }
+
+      if (i < lines.length) i += 1;
+      blocks.push({ type: "code", language, text: codeLines.join("\n") });
+      continue;
+    }
+
+    const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      blocks.push({ type: "heading", level: heading[1].length, text: heading[2].trim() });
+      i += 1;
+      continue;
+    }
+
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+      blocks.push({ type: "hr" });
+      i += 1;
+      continue;
+    }
+
+    if (/^>\s?/.test(trimmed)) {
+      const quoteLines = [];
+
+      while (i < lines.length && /^>\s?/.test(lines[i].trim())) {
+        quoteLines.push(lines[i].trim().replace(/^>\s?/, ""));
+        i += 1;
+      }
+
+      blocks.push({ type: "blockquote", text: quoteLines.join(" ") });
+      continue;
+    }
+
+    if (/^[-*+]\s+/.test(trimmed)) {
+      const items = [];
+
+      while (i < lines.length && /^[-*+]\s+/.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^[-*+]\s+/, ""));
+        i += 1;
+      }
+
+      blocks.push({ type: "ul", items });
+      continue;
+    }
+
+    if (/^\d+\.\s+/.test(trimmed)) {
+      const items = [];
+
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^\d+\.\s+/, ""));
+        i += 1;
+      }
+
+      blocks.push({ type: "ol", items });
+      continue;
+    }
+
+    const paragraph = [];
+    while (i < lines.length && lines[i].trim() && !isMarkdownBlockStart(lines[i])) {
+      paragraph.push(lines[i].trim());
+      i += 1;
+    }
+
+    if (paragraph.length) {
+      blocks.push({ type: "p", text: paragraph.join(" ") });
+    } else {
+      i += 1;
+    }
+  }
+
+  if (!blocks.length) {
+    return [{ type: "p", text: "No description provided yet." }];
+  }
+  return blocks;
+}
+
+function isMarkdownBlockStart(line) {
+  const trimmed = line.trim();
+  return (
+    /^```/.test(trimmed) ||
+    /^(#{1,6})\s+/.test(trimmed) ||
+    /^(-{3,}|\*{3,}|_{3,})$/.test(trimmed) ||
+    /^>\s?/.test(trimmed) ||
+    /^[-*+]\s+/.test(trimmed) ||
+    /^\d+\.\s+/.test(trimmed)
+  );
+}
+
 function normalizeRichText(text) {
   const lines = text
     .split(/\r?\n/)
@@ -693,21 +805,63 @@ function parseHeaderLine(line) {
 
 const RichBlocks = ({ blocks }) => {
   return blocks.map((b, idx) => {
+    if (b.type === "heading") {
+      const headingClassName =
+        b.level <= 2
+          ? "font-display text-2xl font-black uppercase leading-tight text-[#151513] md:text-3xl"
+          : "text-lg font-black uppercase leading-tight tracking-[0.08em] text-[#151513] md:text-xl";
+
+      return (
+        <h3 key={idx} className={headingClassName}>
+          <InlineMarkdown text={b.text} />
+        </h3>
+      );
+    }
     if (b.type === "p") {
       return (
         <p key={idx} className="text-sm leading-7 text-[#5d5d56] md:text-base">
-          {b.text}
+          <InlineMarkdown text={b.text} />
         </p>
       );
     }
     if (b.type === "ul") {
       return (
         <ul key={idx} className="list-disc space-y-2 pl-5 text-sm leading-7 text-[#5d5d56] md:text-base">
-          {b.items.map((it) => (
-            <li key={it}>{it}</li>
+          {b.items.map((it, itemIndex) => (
+            <li key={`${it}-${itemIndex}`}>
+              <InlineMarkdown text={it} />
+            </li>
           ))}
         </ul>
       );
+    }
+    if (b.type === "ol") {
+      return (
+        <ol key={idx} className="list-decimal space-y-2 pl-5 text-sm leading-7 text-[#5d5d56] md:text-base">
+          {b.items.map((it, itemIndex) => (
+            <li key={`${it}-${itemIndex}`}>
+              <InlineMarkdown text={it} />
+            </li>
+          ))}
+        </ol>
+      );
+    }
+    if (b.type === "blockquote") {
+      return (
+        <blockquote key={idx} className="border-l-4 border-[#ff5a36] bg-[#f2efe7] py-3 pl-4 pr-3 text-sm font-bold leading-7 text-[#5d5d56] md:text-base">
+          <InlineMarkdown text={b.text} />
+        </blockquote>
+      );
+    }
+    if (b.type === "code") {
+      return (
+        <pre key={idx} className="overflow-x-auto border-2 border-[#151513] bg-[#242421] p-4 text-xs leading-6 text-[#fbf8f0] shadow-[3px_3px_0_rgba(21,21,19,0.18)]">
+          <code>{b.text}</code>
+        </pre>
+      );
+    }
+    if (b.type === "hr") {
+      return <hr key={idx} className="border-t-2 border-[#151513]" />;
     }
     if (b.type === "section") {
       return (
@@ -722,6 +876,56 @@ const RichBlocks = ({ blocks }) => {
     return null;
   });
 };
+
+const InlineMarkdown = ({ text }) => {
+  const parts = String(text || "").split(/(\[[^\]\n]+\]\([^)]+\)|\*\*[^*\n]+?\*\*|`[^`\n]+?`|\*[^*\n]+?\*)/g);
+
+  return parts.map((part, index) => {
+    if (!part) return null;
+
+    const link = part.match(/^\[([^\]\n]+)\]\(([^)]+)\)$/);
+    if (link) {
+      const href = safeMarkdownHref(link[2]);
+      const isExternal = /^https?:\/\//i.test(href);
+
+      return (
+        <a
+          key={`${part}-${index}`}
+          href={href}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noopener noreferrer" : undefined}
+          className="font-black text-[#151513] underline decoration-[#ff5a36] decoration-2 underline-offset-4 hover:text-[#ff5a36] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a36]"
+        >
+          {link[1]}
+        </a>
+      );
+    }
+
+    if (/^\*\*[^*]+\*\*$/.test(part)) {
+      return <strong key={`${part}-${index}`} className="font-black text-[#151513]">{part.slice(2, -2)}</strong>;
+    }
+
+    if (/^`[^`]+`$/.test(part)) {
+      return <code key={`${part}-${index}`} className="border border-[#151513] bg-[#f2efe7] px-1 py-0.5 text-[0.92em] font-black text-[#151513]">{part.slice(1, -1)}</code>;
+    }
+
+    if (/^\*[^*]+\*$/.test(part)) {
+      return <em key={`${part}-${index}`} className="font-semibold text-[#151513]">{part.slice(1, -1)}</em>;
+    }
+
+    return part;
+  });
+};
+
+function safeMarkdownHref(href) {
+  const cleaned = String(href || "").trim().replace(/^<|>$/g, "");
+
+  if (/^(https?:\/\/|mailto:|tel:|#|\/)/i.test(cleaned)) {
+    return cleaned;
+  }
+
+  return "#";
+}
 
 export default ItemDetailPage;
 

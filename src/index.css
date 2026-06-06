@@ -24,3 +24,38 @@
   --shadow-hard-light: 7px 7px 0 rgba(21, 21, 19, 0.18);
   --shadow-hard-accent: 6px 6px 0 #ff5a36;
 }
+
+@media (hover: none) and (pointer: coarse) {
+  :where(button, a[href], [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition-duration: 160ms;
+    transition-property: background-color, border-color, box-shadow, color, filter, opacity, scale;
+  }
+
+  :where(button, a[href], [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):not(:disabled):active {
+    animation: mobile-click-feedback 160ms cubic-bezier(0.22, 1, 0.36, 1);
+    filter: brightness(0.94);
+    scale: 0.97;
+  }
+}
+
+@keyframes mobile-click-feedback {
+  0% {
+    scale: 1;
+  }
+
+  55% {
+    scale: 0.95;
+  }
+
+  100% {
+    scale: 0.97;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button, a[href], [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):active {
+    animation: none;
+  }
+}
