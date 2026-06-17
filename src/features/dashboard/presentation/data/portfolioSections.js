@@ -4,7 +4,7 @@ import { ROUTES, toExperienceDetail, toProjectDetail } from "@/shared/constants/
 export const portfolioSectionConfigs = {
   experience: {
     key: "experience",
-    number: "02",
+    number: "03",
     title: "Experience",
     collectionName: COLLECTIONS.experience,
     viewAllHref: ROUTES.experience,
@@ -12,7 +12,7 @@ export const portfolioSectionConfigs = {
   },
   projects: {
     key: "projects",
-    number: "03",
+    number: "04",
     title: "Projects",
     collectionName: COLLECTIONS.projects,
     viewAllHref: ROUTES.projects,
@@ -21,7 +21,7 @@ export const portfolioSectionConfigs = {
   },
   education: {
     key: "education",
-    number: "04",
+    number: "05",
     title: "Education",
     collectionName: COLLECTIONS.education,
     viewAllHref: ROUTES.education,

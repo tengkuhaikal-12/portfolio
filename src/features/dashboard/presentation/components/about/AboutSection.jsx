@@ -11,7 +11,7 @@ const AboutSection = () => (
     className="border-b-2 border-[var(--color-ink)] bg-[rgb(var(--color-paper-light-rgb)/0.85)] px-4 py-12 sm:px-6 sm:py-14"
   >
     <Container>
-      <div className=" flex flex-col gap-7">
+      <div className="flex flex-col gap-7">
         <SectionHeader number="01" title="About Me" compact />
 
         <p className="text-sm font-bold leading-7 sm:text-base sm:leading-8">

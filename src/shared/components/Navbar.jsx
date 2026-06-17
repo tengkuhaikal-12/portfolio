@@ -11,6 +11,7 @@ const Navbar = () => {
   const isHome = location.pathname === "/";
 
   const navLinks = [
+    { name: "Badges", id: "badges" },
     { name: "Experience", id: "experience" },
     { name: "Projects", id: "projects" },
     { name: "Education", id: "education" },

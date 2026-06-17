@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import EditPortfolioModal from "@/features/dashboard/presentation/components/EditPortfolioModal";
 import Hero from "@/features/dashboard/presentation/components/hero/Hero";
 import AboutSection from "@/features/dashboard/presentation/components/about/AboutSection";
+import BadgesSection from "@/features/dashboard/presentation/components/badges/BadgesSection";
 import SectionCarousel from "@/features/dashboard/presentation/components/carousel/SectionCarousel";
 import ContactSection from "@/features/dashboard/presentation/components/contact/ContactSection";
 import { usePortfolioOverview } from "@/features/dashboard/presentation/hooks/usePortfolioOverview";
@@ -69,6 +70,7 @@ const PortfolioPage = () => {
 
       <main>
         <AboutSection />
+        <BadgesSection />
         <SectionCarousel
           id="experience"
           config={portfolioSectionConfigs.experience}
