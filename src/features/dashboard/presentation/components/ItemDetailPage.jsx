@@ -754,6 +754,13 @@ function normalizeMarkdown(text) {
       continue;
     }
 
+    if (isMarkdownTableStart(lines, i)) {
+      const { table, nextIndex } = parseMarkdownTable(lines, i);
+      blocks.push(table);
+      i = nextIndex;
+      continue;
+    }
+
     if (/^>\s?/.test(trimmed)) {
       const quoteLines = [];
 
@@ -791,7 +798,7 @@ function normalizeMarkdown(text) {
     }
 
     const paragraph = [];
-    while (i < lines.length && lines[i].trim() && !isMarkdownBlockStart(lines[i])) {
+    while (i < lines.length && lines[i].trim() && !isMarkdownBlockStart(lines[i], lines, i)) {
       paragraph.push(lines[i].trim());
       i += 1;
     }
@@ -809,16 +816,125 @@ function normalizeMarkdown(text) {
   return blocks;
 }
 
-function isMarkdownBlockStart(line) {
+function isMarkdownBlockStart(line, lines, index) {
   const trimmed = line.trim();
   return (
     /^```/.test(trimmed) ||
     /^(#{1,6})\s+/.test(trimmed) ||
     /^(-{3,}|\*{3,}|_{3,})$/.test(trimmed) ||
+    (Array.isArray(lines) && isMarkdownTableStart(lines, index)) ||
     /^>\s?/.test(trimmed) ||
     /^[-*+]\s+/.test(trimmed) ||
     /^\d+\.\s+/.test(trimmed)
   );
+}
+
+function isMarkdownTableStart(lines, index) {
+  if (!Array.isArray(lines) || index + 1 >= lines.length) return false;
+
+  const headerLine = lines[index].trim();
+  const separatorLine = lines[index + 1].trim();
+
+  if (!headerLine || !separatorLine || !headerLine.includes("|") || !separatorLine.includes("|")) {
+    return false;
+  }
+
+  const headers = splitMarkdownTableRow(headerLine);
+  const separators = splitMarkdownTableRow(separatorLine);
+
+  return (
+    headers.length > 0 &&
+    headers.length === separators.length &&
+    separators.every(isMarkdownTableSeparatorCell)
+  );
+}
+
+function parseMarkdownTable(lines, startIndex) {
+  const headers = splitMarkdownTableRow(lines[startIndex]);
+  const separators = splitMarkdownTableRow(lines[startIndex + 1]);
+  const alignments = separators.map(getMarkdownTableAlignment);
+  const rows = [];
+  let i = startIndex + 2;
+
+  while (i < lines.length && isMarkdownTableDataRow(lines[i], headers.length)) {
+    rows.push(normalizeTableRow(splitMarkdownTableRow(lines[i]), headers.length));
+    i += 1;
+  }
+
+  return {
+    table: {
+      type: "table",
+      headers,
+      alignments,
+      rows,
+    },
+    nextIndex: i,
+  };
+}
+
+function splitMarkdownTableRow(row) {
+  let value = String(row || "").trim();
+
+  if (value.startsWith("|")) value = value.slice(1);
+  if (value.endsWith("|") && !value.endsWith("\\|")) value = value.slice(0, -1);
+
+  const cells = [];
+  let cell = "";
+
+  for (let i = 0; i < value.length; i += 1) {
+    const char = value[i];
+    const nextChar = value[i + 1];
+
+    if (char === "\\" && nextChar === "|") {
+      cell += "|";
+      i += 1;
+      continue;
+    }
+
+    if (char === "|") {
+      cells.push(cell.trim());
+      cell = "";
+      continue;
+    }
+
+    cell += char;
+  }
+
+  cells.push(cell.trim());
+  return cells;
+}
+
+function isMarkdownTableSeparatorCell(cell) {
+  return /^:?-{3,}:?$/.test(String(cell || "").trim());
+}
+
+function getMarkdownTableAlignment(separatorCell) {
+  const cell = String(separatorCell || "").trim();
+  const alignsLeft = cell.startsWith(":");
+  const alignsRight = cell.endsWith(":");
+
+  if (alignsLeft && alignsRight) return "center";
+  if (alignsRight) return "right";
+  return "left";
+}
+
+function isMarkdownTableDataRow(line, columnCount) {
+  const trimmed = String(line || "").trim();
+
+  if (!trimmed || !trimmed.includes("|")) return false;
+
+  const cells = splitMarkdownTableRow(trimmed);
+  return cells.length === columnCount || cells.length > 1 || trimmed.startsWith("|");
+}
+
+function normalizeTableRow(cells, columnCount) {
+  const normalized = cells.slice(0, columnCount);
+
+  while (normalized.length < columnCount) {
+    normalized.push("");
+  }
+
+  return normalized;
 }
 
 function normalizeRichText(text) {
@@ -946,6 +1062,43 @@ const RichBlocks = ({ blocks }) => {
     }
     if (b.type === "hr") {
       return <hr key={idx} className="border-t-2 border-[var(--color-ink)]" />;
+    }
+    if (b.type === "table") {
+      return (
+        <div key={idx} className="overflow-x-auto border-2 border-[var(--color-ink)] bg-[var(--color-paper)] shadow-[3px_3px_0_rgb(var(--color-ink-rgb)/0.18)]">
+          <table className="min-w-full border-collapse text-sm leading-6 md:text-base">
+            <thead className="bg-[var(--color-panel)] text-[var(--color-paper-light)]">
+              <tr>
+                {b.headers.map((header, cellIndex) => (
+                  <th
+                    key={`${header}-${cellIndex}`}
+                    scope="col"
+                    style={{ textAlign: b.alignments?.[cellIndex] || "left" }}
+                    className="border-b-2 border-r-2 border-[var(--color-ink)] px-4 py-3 align-top text-xs font-black uppercase tracking-[0.08em] last:border-r-0"
+                  >
+                    <InlineMarkdown text={header} />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {b.rows.map((row, rowIndex) => (
+                <tr key={`row-${rowIndex}`} className="odd:bg-[var(--color-paper-light)] even:bg-[var(--color-paper)]">
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={`${cell}-${cellIndex}`}
+                      style={{ textAlign: b.alignments?.[cellIndex] || "left" }}
+                      className="border-r-2 border-t-2 border-[var(--color-ink)] px-4 py-3 align-top text-[var(--color-muted)] last:border-r-0"
+                    >
+                      <InlineMarkdown text={cell} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
     }
     if (b.type === "section") {
       return (
