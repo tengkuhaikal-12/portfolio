@@ -9,6 +9,7 @@ export const portfolioSectionConfigs = {
     collectionName: COLLECTIONS.experience,
     viewAllHref: ROUTES.experience,
     detailHref: toExperienceDetail,
+    dark: true,
   },
   projects: {
     key: "projects",
@@ -17,7 +18,7 @@ export const portfolioSectionConfigs = {
     collectionName: COLLECTIONS.projects,
     viewAllHref: ROUTES.projects,
     detailHref: toProjectDetail,
-    dark: true,
+    
   },
   education: {
     key: "education",
@@ -25,5 +26,6 @@ export const portfolioSectionConfigs = {
     title: "Education",
     collectionName: COLLECTIONS.education,
     viewAllHref: ROUTES.education,
+    dark: true,
   },
 };
