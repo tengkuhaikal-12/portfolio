@@ -95,7 +95,7 @@ const Hero = () => {
         <div>
           <div className={heroStyles.eyebrow}>
             <span className="h-[3px] w-10 bg-[var(--color-accent)]" />
-            Software Engineering Student / Kuala Lumpur
+            Software Engineering Intern / Putrajaya, MY
           </div>
 
           <h1 className={heroStyles.title}>
