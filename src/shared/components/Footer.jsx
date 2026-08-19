@@ -9,26 +9,26 @@ import { loginWithGooglePopup } from "@/features/auth/services/authService";
 import { ROUTES } from "@/shared/constants/routes";
 
 const CONTACT_LINKS = [
-  {
-    label: "LinkedIn",
-    href: "https://linkedin.com/in/your-profile",
-    icon: FaLinkedin,
-  },
+  // {
+  //   label: "LinkedIn",
+  //   href: "https://linkedin.com/in/your-profile",
+  //   icon: FaLinkedin,
+  // },
   {
     label: "Instagram",
-    href: "https://instagram.com/your-handle",
+    href: "https://www.instagram.com/_tmhta/",
     icon: FaInstagram,
   },
   {
     label: "GitHub",
-    href: "https://github.com/your-username",
+    href: "https://github.com/tengkuhaikal",
     icon: FaGithub,
   },
-  {
-    label: "Email",
-    href: "mailto:your@email.com",
-    icon: MdEmail,
-  },
+  // {
+  //   label: "Email",
+  //   href: "mailto:your@email.com",
+  //   icon: MdEmail,
+  // },
 ];
 
 const FooterNavLink = ({ isHome, id, children }) => {
