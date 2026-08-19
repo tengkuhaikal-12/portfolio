@@ -38,7 +38,7 @@ const ContactRow = ({ icon, label, value, href }) => (
 const ContactSection = ({ contactForm, contactStatus, onChange, onSubmit }) => (
   <section id="contact" className="border-b-2 border-[var(--color-ink)] bg-[var(--color-accent)] px-4 py-16 sm:px-6 sm:py-20">
     <Container>
-      <SectionHeader number="05" title="Contact" contact />
+      <SectionHeader number="06" title="Contact" contact />
 
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="border-2 border-[var(--color-ink)] bg-[var(--color-panel)] p-5 text-[var(--color-paper-light)] shadow-[7px_7px_0_var(--color-ink)] sm:p-8">
