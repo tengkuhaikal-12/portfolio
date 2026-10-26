@@ -1,3 +1,4 @@
+
 import Button from "@/features/dashboard/presentation/components/common/Button";
 import Container from "@/features/dashboard/presentation/components/common/Container";
 import SectionHeader from "@/features/dashboard/presentation/components/common/SectionHeader";
@@ -5,7 +6,10 @@ import PortfolioCard from "@/features/dashboard/presentation/components/cards/Po
 import CarouselControls from "@/features/dashboard/presentation/components/carousel/CarouselControls";
 import CarouselDots from "@/features/dashboard/presentation/components/carousel/CarouselDots";
 import { useCarousel } from "@/features/dashboard/presentation/hooks/useCarousel";
-import { getItemDetailHref, getItemMeta } from "@/features/dashboard/presentation/utils/cardHelpers";
+import {
+  getItemDetailHref,
+  getItemMeta,
+} from "@/features/dashboard/presentation/utils/cardHelpers";
 import "@/features/dashboard/presentation/styles/animations.css";
 
 const EmptyCarouselCard = () => (
@@ -20,7 +24,11 @@ const DESKTOP_VISIBLE_COUNT = 3;
 
 const getVisibleItems = (items, startIndex, visibleCount) => {
   if (!items.length) return [];
-  const endIndex = Math.min(startIndex + visibleCount, items.length);
+
+  const endIndex = Math.min(
+    startIndex + visibleCount,
+    items.length
+  );
 
   return items.slice(startIndex, endIndex).map((item, offset) => ({
     item,
@@ -28,37 +36,112 @@ const getVisibleItems = (items, startIndex, visibleCount) => {
   }));
 };
 
-const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
-  const { activeIndex, direction, goToPrevious, goToNext, goToIndex } = useCarousel(items.length);
+const SectionCarousel = ({
+  id,
+  config,
+  items,
+  isAdmin,
+  onEdit,
+  onDelete,
+}) => {
+  const {
+    activeIndex,
+    direction,
+    goToPrevious,
+    goToNext,
+    goToIndex,
+    handleWheel,
+  } = useCarousel(items.length);
+
   const activeItem = items[activeIndex];
-  const desktopPageCount = Math.ceil(items.length / DESKTOP_VISIBLE_COUNT);
-  const desktopPageIndex = Math.floor(activeIndex / DESKTOP_VISIBLE_COUNT);
-  const desktopStartIndex = desktopPageIndex * DESKTOP_VISIBLE_COUNT;
-  const desktopItems = getVisibleItems(items, desktopStartIndex, DESKTOP_VISIBLE_COUNT);
+
+  const desktopPageCount = Math.ceil(
+    items.length / DESKTOP_VISIBLE_COUNT
+  );
+
+  const desktopPageIndex = Math.floor(
+    activeIndex / DESKTOP_VISIBLE_COUNT
+  );
+
+  const desktopStartIndex =
+    desktopPageIndex * DESKTOP_VISIBLE_COUNT;
+
+  const desktopItems = getVisibleItems(
+    items,
+    desktopStartIndex,
+    DESKTOP_VISIBLE_COUNT
+  );
+
   const hasMobilePagination = items.length > 1;
-  const hasDesktopPagination = items.length > DESKTOP_VISIBLE_COUNT;
+  const hasDesktopPagination =
+    items.length > DESKTOP_VISIBLE_COUNT;
 
   const goToPreviousDesktopPage = () => {
     if (!hasDesktopPagination) return;
-    const previousPage = (desktopPageIndex - 1 + desktopPageCount) % desktopPageCount;
-    goToIndex(previousPage * DESKTOP_VISIBLE_COUNT, "previous");
+
+    const previousPage =
+      (desktopPageIndex - 1 + desktopPageCount) %
+      desktopPageCount;
+
+    goToIndex(
+      previousPage * DESKTOP_VISIBLE_COUNT,
+      "previous"
+    );
   };
 
   const goToNextDesktopPage = () => {
     if (!hasDesktopPagination) return;
-    const nextPage = (desktopPageIndex + 1) % desktopPageCount;
-    goToIndex(nextPage * DESKTOP_VISIBLE_COUNT, "next");
+
+    const nextPage =
+      (desktopPageIndex + 1) % desktopPageCount;
+
+    goToIndex(
+      nextPage * DESKTOP_VISIBLE_COUNT,
+      "next"
+    );
   };
 
   const goToDesktopPage = (pageIndex) => {
-    goToIndex(pageIndex * DESKTOP_VISIBLE_COUNT, pageIndex >= desktopPageIndex ? "next" : "previous");
+    goToIndex(
+      pageIndex * DESKTOP_VISIBLE_COUNT,
+      pageIndex >= desktopPageIndex ? "next" : "previous"
+    );
+  };
+
+  // Touchpad navigation follows the current responsive layout.
+  const handleCarouselWheel = (event) => {
+    const isDesktop = window.matchMedia(
+      "(min-width: 1024px)"
+    ).matches;
+
+    if (isDesktop && hasDesktopPagination) {
+      handleWheel(event, {
+        onPrevious: goToPreviousDesktopPage,
+        onNext: goToNextDesktopPage,
+      });
+
+      return;
+    }
+
+    handleWheel(event, {
+      onPrevious: goToPrevious,
+      onNext: goToNext,
+    });
   };
 
   return (
-    <section id={id} className={`relative min-h-screen overflow-hidden border-b-2 border-[var(--color-ink)] px-4 py-16 sm:px-6 sm:py-20 ${config.dark ? "bg-[var(--color-panel)] text-[var(--color-paper-light)]" : "bg-[rgb(var(--color-paper-rgb)/0.9)] text-[var(--color-ink)]"}`}>
+    <section
+      id={id}
+      onWheel={handleCarouselWheel}
+      className={`relative min-h-screen overflow-hidden border-b-2 border-[var(--color-ink)] px-4 py-16 sm:px-6 sm:py-20 ${config.dark
+          ? "bg-[var(--color-panel)] text-[var(--color-paper-light)]"
+          : "bg-[rgb(var(--color-paper-rgb)/0.9)] text-[var(--color-ink)]"
+        }`}
+    >
       {config.dark ? (
         <>
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgb(var(--color-white-rgb)/0.035)_1px,transparent_1px),linear-gradient(90deg,rgb(var(--color-white-rgb)/0.035)_1px,transparent_1px)] [background-size:32px_32px]" />
+
           <div className="pointer-events-none absolute right-0 top-0 h-2 w-1/3 bg-[var(--color-accent)]" />
         </>
       ) : null}
@@ -68,15 +151,38 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
           number={config.number}
           title={config.title}
           dark={config.dark}
-          action={<Button to={config.viewAllHref} variant={config.dark ? "paper" : "orange"}>View All</Button>}
+          action={
+            <Button
+              to={config.viewAllHref}
+              variant={config.dark ? "paper" : "orange"}
+            >
+              View All
+            </Button>
+          }
         />
 
         <div className="mt-8 flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+          {/* Pagination status and navigation controls */}
           <div className="flex shrink-0 items-center justify-between gap-3">
-            <div className={`${config.dark ? "text-[var(--color-copy-muted)]" : "text-[var(--color-muted)]"} text-[10px] font-black uppercase tracking-[0.16em]`}>
-              <span className="lg:hidden">{items.length ? `Slide ${activeIndex + 1} / ${items.length}` : "Slide 0 / 0"}</span>
-              <span className="hidden lg:inline">{items.length ? `Page ${desktopPageIndex + 1} / ${desktopPageCount}` : "Page 0 / 0"}</span>
+            <div
+              className={`text-[10px] font-black uppercase tracking-[0.16em] ${config.dark
+                  ? "text-[var(--color-copy-muted)]"
+                  : "text-[var(--color-muted)]"
+                }`}
+            >
+              <span className="lg:hidden">
+                {items.length
+                  ? `Slide ${activeIndex + 1} / ${items.length}`
+                  : "Slide 0 / 0"}
+              </span>
+
+              <span className="hidden lg:inline">
+                {items.length
+                  ? `Page ${desktopPageIndex + 1} / ${desktopPageCount}`
+                  : "Page 0 / 0"}
+              </span>
             </div>
+
             {hasMobilePagination ? (
               <CarouselControls
                 onPrevious={goToPrevious}
@@ -85,6 +191,7 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
                 className="lg:hidden"
               />
             ) : null}
+
             {hasDesktopPagination ? (
               <CarouselControls
                 onPrevious={goToPreviousDesktopPage}
@@ -95,10 +202,15 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
             ) : null}
           </div>
 
+          {/* Carousel cards */}
           <div className="min-h-0 flex-1 overflow-hidden">
             {activeItem ? (
               <>
-                <div key={`mobile-${activeItem.id}`} className={`portfolio-slide portfolio-slide-${direction} h-full lg:hidden`}>
+                {/* Mobile: one card per slide */}
+                <div
+                  key={`mobile-${activeItem.id}`}
+                  className={`portfolio-slide portfolio-slide-${direction} h-full lg:hidden`}
+                >
                   <PortfolioCard
                     item={activeItem}
                     meta={getItemMeta(activeItem, config.key)}
@@ -106,12 +218,20 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
                     thumbnailIndex={activeIndex}
                     carousel
                     isAdmin={isAdmin}
-                    onEdit={() => onEdit(config.collectionName, activeItem)}
-                    onDelete={() => onDelete(config.collectionName, activeItem.id)}
+                    onEdit={() =>
+                      onEdit(config.collectionName, activeItem)
+                    }
+                    onDelete={() =>
+                      onDelete(config.collectionName, activeItem.id)
+                    }
                   />
                 </div>
 
-                <div key={`desktop-${desktopStartIndex}`} className={`portfolio-slide portfolio-slide-${direction} hidden h-full grid-cols-3 gap-6 lg:grid`}>
+                {/* Desktop: up to three cards per page */}
+                <div
+                  key={`desktop-${desktopStartIndex}`}
+                  className={`portfolio-slide portfolio-slide-${direction} hidden h-full grid-cols-3 gap-6 lg:grid`}
+                >
                   {desktopItems.map(({ item, index }) => (
                     <PortfolioCard
                       key={item.id}
@@ -121,8 +241,12 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
                       thumbnailIndex={index}
                       carousel
                       isAdmin={isAdmin}
-                      onEdit={() => onEdit(config.collectionName, item)}
-                      onDelete={() => onDelete(config.collectionName, item.id)}
+                      onEdit={() =>
+                        onEdit(config.collectionName, item)
+                      }
+                      onDelete={() =>
+                        onDelete(config.collectionName, item.id)
+                      }
                     />
                   ))}
                 </div>
@@ -132,6 +256,7 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
             )}
           </div>
 
+          {/* Mobile pagination dots */}
           {hasMobilePagination ? (
             <CarouselDots
               count={items.length}
@@ -141,6 +266,8 @@ const SectionCarousel = ({ id, config, items, isAdmin, onEdit, onDelete }) => {
               className="lg:hidden"
             />
           ) : null}
+
+          {/* Desktop pagination dots */}
           {hasDesktopPagination ? (
             <CarouselDots
               count={desktopPageCount}
