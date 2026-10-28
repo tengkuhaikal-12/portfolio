@@ -46,6 +46,7 @@ const PortfolioCard = ({
           <img
             src={item.image}
             alt={item.title}
+            crossOrigin="anonymous"
             className="absolute inset-0 h-full w-full object-cover grayscale transition duration-300 group-hover:scale-[1.02] group-hover:grayscale-0"
             style={{ objectPosition: item.imagePosition || "50% 50%" }}
             loading="lazy"

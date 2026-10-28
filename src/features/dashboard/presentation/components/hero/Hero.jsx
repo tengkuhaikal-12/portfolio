@@ -132,6 +132,7 @@ const Hero = () => {
               <img
                 src={displayedImage}
                 alt="Tengku Haikal"
+                crossOrigin="anonymous"
                 className="aspect-[4/5] w-full border-2 border-[var(--color-ink)] object-cover grayscale transition duration-300 hover:grayscale-0"
               />
 

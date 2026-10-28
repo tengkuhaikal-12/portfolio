@@ -85,7 +85,7 @@ const Lightbox = ({ isOpen, images, startIndex = 0, onClose }) => {
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          <img src={current.src} alt={`Image ${index + 1}`} className="max-h-[78vh] w-full bg-[var(--color-ink)] object-contain" />
+          <img src={current.src} alt={`Image ${index + 1}`} crossOrigin="anonymous" className="max-h-[78vh] w-full bg-[var(--color-ink)] object-contain" />
 
           {list.length > 1 ? (
             <>
